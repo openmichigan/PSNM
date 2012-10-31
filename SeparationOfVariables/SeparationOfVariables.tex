@@ -1,0 +1,85 @@
+\chapter{Separation of Variables}
+Separation of variables is a technique which can be used to solve both ODEs and PDEs. The basic idea for an equation in two variables is to rewrite the equation so that each of the two variables is located on different sides of an equality sign, and since both sides of the equation depend on different variables, the two sides must be equal to a constant. We introduce this idea with the simple first order linear ODE
+\begin{eqnarray}\label{eq:simpleode}
+\ \frac{dy}{dt}=y.
+\end{eqnarray}
+As long as $y(t) \neq 0$ for any value of $t$, we can formally separate variables and rewrite eq.\ \eqref{eq:simpleode} as
+\begin{eqnarray}
+\ \frac{dy}{y}=dt.
+\end{eqnarray}
+Now we can solve for $y(t)$ by integrating both sides
+\begin{eqnarray}
+\int{\frac{dy}{y}}&=&\int{dt} \\
+\ln{y}+a&=&t+b \\
+e^{\ln{y}+a}&=&e^{t+b} \\
+e^{\ln{y}}e^{a}&=&e^te^b \\
+y&=&\frac{e^b}{e^a} e^t \\
+y(t)&=&c e^t.
+\end{eqnarray}
+Where $a$, $b$, and $c$ are arbitrary constants of integration. 
+
+We now perform a similar example for a linear partial differential equation. The heat equation is 
+\begin{equation}
+u_t=-u_{xx}.
+\end{equation}
+We suppose that $u=X(x)T(t)$, so that we obtain
+\begin{equation}
+X(x)\frac{\mathrm{d}T}{\mathrm{d}t}(t)=-\frac{\mathrm{d}^2X}{\mathrm{d}x^2}(x)T(t).
+\end{equation}
+We can rewrite this as
+\begin{equation}
+\frac{\frac{\mathrm{d}T}{\mathrm{d}t}(t)}{T(t)}=\frac{\frac{\mathrm{d}^2X}{\mathrm{d}x^2}(x)}{X(x)}=-C,
+\end{equation}
+where $C$ is a constant independent of $x$ and $t$. The two sides can be integrated separately to get $T(t)=\exp(-Ct)$ and either $X(x)=\sin(\sqrt{C}x)$ or $X(x)=\cos(\sqrt{C}x)$. Since the heat equation is linear, one can then add different solutions to the heat equation and still obtain a solution of the heat equation. Hence solutions of the heat equation can be found by
+\begin{equation}
+\sum_n \alpha_n\exp(-C_nt)\sin(\sqrt{C_n}x) + \beta_n\exp(-C_nt)\cos(\sqrt{C_n}x)
+\end{equation}
+where the constants $\alpha_n$, $\beta_n$ and $C_n$ are appropriately chosen. Convergence of such series to an actual solution is studied in mathematics courses on analysis (see for example Evans~\cite{Eva10} or Renardy and Rogers~\cite{RenRog04}), however the main ideas necessary to choose the constants, $\alpha_n$, $\beta_n$ and $C_n$ and hence construct such solutions are typically encountered towards the end of a calculus course or at the beginning of a differential equations course, see for example Courant and John~\cite{CouJoh98} or Boyce and DiPrima~\cite{BoyDip10}. Here, we consider the case where $x\in[0,2\pi]$, and for which we have periodic boundary conditions. In this case $\sqrt{C_n}$ must be integers, which we choose to be non-negative to avoid redundancies. At time $t=0$, we shall suppose that the initial condition is given by 
+\begin{equation}
+u(x,t=0)=f(x).
+\end{equation}
+Now, 
+\begin{align}
+&{} \int_0^{2\pi}\sin(nx)\sin(mx)=\left\{{\pi\quad m=n}\atop{0 \quad m\ne n}\right.,
+\\&{} \int_0^{2\pi}\cos(nx)\cos(mx)=\left\{{\pi\quad m=n}\atop{0 \quad m\ne n}\right.,
+\end{align}
+and
+\begin{align}
+&{} \int_0^{2\pi}\cos(nx)\sin(mx)=0.
+\end{align}
+Thus we can consider the trigonometric polynomials as being orthogonal vectors. It can be shown that a sum of these trigonometric polynomials can be used to approximate a wide class of periodic functions on the interval $[0,2\pi]$; for well behaved functions, only the first few terms in such a sum are required to obtain highly-accurate approximations. Thus, we can suppose that
+\begin{equation}
+f(x)=\sum_n  \alpha_n\sin(\sqrt{C_n}x) + \beta_n\cos(\sqrt{C_n}x).
+\end{equation}
+Multiplying the above equation by either $\sin(\sqrt{C_n}x)$ or $\cos(\sqrt{C_n}x)$ and using the orthogonality of the functions, we deduce that
+\begin{equation}
+\alpha_n=\frac{\int_0^{2\pi}f(x)\sin(\sqrt{C_n}x)\mathrm{d}x}{\int_0^{2\pi}\sin^2(\sqrt{C_n}x)\mathrm{d}x}
+\end{equation}
+and
+\begin{equation}
+\beta_n=\frac{\int_0^{2\pi}f(x)\cos(\sqrt{C_n}x)\mathrm{d}x}{\int_0^{2\pi}\cos^2(\sqrt{C_n}x)\mathrm{d}x}.
+\end{equation}
+
+Most ODEs and PDEs of practical interest will not be separable. However, the ideas behind separation of variables can be used to allow one to find series solutions to a wide class of PDEs. These series solutions can also be found numerically and are what we will use to find approximate solutions to PDEs, and so the ideas behind this simple examples are quite useful.
+
+%%%%%%%
+%  Section
+%%%%%%%
+\section{Exercises}
+\begin{enumerate}
+\item[1)] Solve the ordinary differential equation
+$$u_t=u(u-1)\quad u(t=0)=0.8$$
+using separation of variables.
+\item[2)] 
+\begin{enumerate}
+\item[a)] Use separation of variables to solve the partial differential equation 
+$$u_{tt}=u_{xx}$$
+with
+$$u(x=0,t)=u(x=2\pi,t),$$
+$$u(x,t=0)=\sin(6x)+\cos(4x)$$
+and
+$$u_t(x,t=0)=0.$$
+\item[b)] Create plots of your solution at several different times and/or create an animation of the solution you have found.\footnote{Your solution should involve only a few modes and so you should be able to use a wide variety of software to create plots, for example a graphing calculator, a spreadsheet program such as Excel, Mathematica, Wolfram Alpha, Matlab, Maple, Python, Sage etc. You can use Wolfram Alpha and Sage online.} 
+\item[c)]  The procedure required to find the coefficients in the Fourier series expansion for the initial condition can become quite tedious/intractable. Consider the initial condition $u(x,t=0)=\exp(\sin(x))$. Explain why it would be difficult to compute the Fourier coefficients for this by hand. Also explain why it would be nice to have an algorithm or computer program that does this for you.
+\end{enumerate}
+\end{enumerate}

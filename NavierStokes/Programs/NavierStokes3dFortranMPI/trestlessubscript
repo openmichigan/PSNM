@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -q normal
+#PBS -A mia118
+#PBS -l nodes=3:ppn=32
+#PBS -l walltime=00:20:00
+#PBS -N NS3d  
+#PBS -M cloutbra@umich.edu
+#PBS -m abe
+#PBS -V
+# change to the working directory
+
+cd $PBS_O_WORKDIR 
+
+
+export ddir=data
+export inputfile=INPUTFILE
+# the number of processes below should be equal to ppn*nodes
+# so if nodes=2 and ppn =32, you should have -np 64
+mpirun_rsh -np 96 -hostfile $PBS_NODEFILE ns3d

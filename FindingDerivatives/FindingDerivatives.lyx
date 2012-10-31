@@ -1,0 +1,278 @@
+#LyX file created by tex2lyx 2.0.1
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass report
+\use_default_options false
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\paperfontsize 12
+\spacing single
+\use_hyperref 1
+\pdf_bookmarks 1
+\pdf_bookmarksnumbered 0
+\pdf_bookmarksopen 0
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks 0
+\pdf_pdfborder 0
+\pdf_colorlinks 0
+\pdf_backref section
+\pdf_pdfusetitle 1
+\papersize default
+\use_geometry false
+\use_amsmath 2
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\end_header
+
+\begin_body
+
+\begin_layout Chapter
+
+Finding Derivatives using Fourier Spectral Methods
+\end_layout
+
+\begin_layout Standard
+
+Spectral methods are a class of numerical techniques that often utilize the FFT. Spectral methods can be implemented easily in Matlab, but there are some conventions to note. First note that Matlab's 
+\begin_inset Quotes eld
+\end_inset
+
+fft
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+ifft
+\begin_inset Quotes erd
+\end_inset
+
+ functions store wave numbers in a different order than we will define, 
+\begin_inset Formula $0,1,...,\frac{n}{2},-\frac{n}{2}+1,-\frac{n}{2}+2,...,-1$
+\end_inset
+
+. Secondly, Matlab does not take full advantage of real input data. The DFT of real data satisfies the symmetry property 
+\begin_inset Formula $\hat{v}(-k)=\hat{v}(k)$
+\end_inset
+
+, so it is only necessary to compute half of the wave numbers. Matlab's 
+\begin_inset Quotes eld
+\end_inset
+
+fft" command does not take full advantage of this property and wastes memory storing both the positive and negative wave numbers. Third, spectral accuracy (exponential decay off the magnitude of the Fourier coefficients) is better for smooth functions, so where possible be sure your initial conditions are smooth -- 
+\series bold
+When using a Fourier spectral method this requires that your initial conditions are periodic
+\series default
+. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+% subsection
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%%%%%%%%
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+
+Taking a Derivative in Fourier Space
+\end_layout
+
+\begin_layout Standard
+
+Let 
+\begin_inset Formula $u(x)$
+\end_inset
+
+ be a function which is sampled at the 
+\begin_inset Formula $n$
+\end_inset
+
+ discrete points 
+\begin_inset Formula $x_i \in {h,2h,...,ih,..,2\pi-h,2\pi}$
+\end_inset
+
+ and 
+\begin_inset Formula $h=2\pi/n$
+\end_inset
+
+ in real space. Now take the FFT 
+\begin_inset Formula \begin{eqnarray}
+\text{FFT}(u_j) \equiv \hat{u}_k \qquad \text{where} \quad k \in {\frac{-n}{2}+1,...\frac{n}{2}}.
+\end{eqnarray}
+\end_inset
+
+ The Fourier transform of 
+\begin_inset Formula $\frac{\partial^2 u_j}{\partial x^2}$
+\end_inset
+
+ can be easily computed from 
+\begin_inset Formula $\hat{u}_k$
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+
+\begin_layout Standard
+
+More details can be found in Trefethen
+\begin_inset space ~
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Chap. 3"
+key "Tre00"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+? 
+\begin_inset Formula \begin{eqnarray}
+\textrm{FFT}(\frac{\partial^\nu u_j}{\partial x^\nu}) \equiv (ik)^\nu \hat{u}_k \qquad \text{where} \quad \hat{u}_{n/2}=0 \quad, \text{if \quad $\nu$ \quad \text{is odd}}. \label{eq:Spectral_Method_Deriv}
+\end{eqnarray}
+\end_inset
+
+ Thus, differentiation in real space becomes multiplication in Fourier space. We can then take the inverse fast Fourier Transform (IFFT) to yield a solution in real space. In the next section we will use this to implement forward Euler and backward Euler timestepping schemes to compute solutions for several PDEs.
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+%subsection
+\end_layout
+
+\begin_layout Standard
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+
+Exercises
+\end_layout
+
+\begin_layout Enumerate
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+[
+\end_layout
+
+\end_inset
+
+1)
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+]
+\end_layout
+
+\end_inset
+
+ Let 
+\begin_inset Formula $u(x)=\sum_k \hat{u}_k \exp(ikx)$
+\end_inset
+
+ be the Fourier series representation of a function 
+\begin_inset Formula $u(x)$
+\end_inset
+
+. Explain why 
+\begin_inset Formula \[\frac{\mathrm{d}^{\nu}u}{\mathrm{d}x^{\nu}}=\sum (ik)^{\nu}\hat{u}_k,\]
+\end_inset
+
+ provided the series converges. 
+\end_layout
+
+\end_body
+\end_document

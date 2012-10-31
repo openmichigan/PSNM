@@ -1,0 +1,124 @@
+\chapter{The Klein-Gordon Equation}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Background}
+
+\footnote{An incomplete but easily accessible mathematical introduction to this equation can be found at \url{http://wiki.math.toronto.edu/DispersiveWiki/index.php/Semilinear_NLW}.}The focusing/defocusing nonlinear Klein-Gordon equation describes the evolution of a possible complex scalar field $u$ according to, 
+\begin{equation}\label{eq:KleinGordon}
+\frac{\partial^2 u}{\partial t^2} - \Delta u +u = \pm \lvert u\rvert^2u,
+\end{equation}
+where $+$  is the focusing case and $-$ the defocusing case in a similar manner to the nonlinear Schr\"{o}dinger equation. Blow up of three dimensional radially symmetric real solutions to this equation have recently been numerically studied by Donninger and Schlag~\cite{DonSch11}. Two dimensional simulations of the Klein-Gordon equation can be found in Yang~\cite{Yan06}. The linear Klein-Gordon equation occurs as a modification of the linear Schr\"{o}dinger equation that is consistent with special relativity, see for example Landau~\cite{Lan96} or Grenier~\cite{Gre94}. At the present time, there have been no numerical studies of blow up of solutions to this equation without the assumption of radial symmetry. This equation has generated a large mathematical literature and is still poorly understood. Most of this mathematical literature has concentrated on analyzing the equation on an infinite three dimensional space with initial data that either decays exponentially as one tends to infinity or is nonzero on a finite set of the domain. Here, we will simulate this equation in a periodic setting. Since this equation is a wave equation, it has a finite speed of propagation of information, much as a sound wave in air takes time to move from one point to another. Consequently for short time simulations, a simulation of a solution that is only nonzero on a finite part of the domain is similar to a simulation on an infinite domain. However, over long times, the solution can spread out and interact with itself on a periodic domain, whereas on an infinite domain,  the interaction over long times is significantly reduced and the solution primarily spreads out. Understanding the interactions in a periodic setting is an interesting mathematical problem. The Klein-Gordon equation has a conserved energy given by
+\begin{equation}
+\int  \frac{1}{2}\left( \frac{\partial u}{\partial t}\right)^2 + \frac{u^2}{2}+\frac{1}{2}\left\lvert \nabla u \right\rvert^2 \mp \frac{\left\lvert u \right\rvert^4}{4} \mathrm{d}\bm x.
+\end{equation}
+The equation is also time reversible. For long time simulations, one wants to construct numerical methods that approximately conserve this energy and are also time reversible. When using Fourier spectral methods, we primarily need to ensure that the time discretization preserves these properties, since the spectral spatial discretization will typically automatically satisfy these properties. Following Donninger and Schlag~\cite{DonSch11}, we use two schemes. First, an implicit-explicit time stepping scheme which is time reversible but only conserves the energy approximately and is given by
+\begin{equation}\label{eq:KgImEx}
+\frac{u^{n+1}-2u^n+u^{n-1}}{(\delta t)^2} -\Delta \frac{u^{n+1}+2u^n+u^{n-1}}{4} + \frac{u^{n+1}+2u^n+u^{n-1}}{4} = \pm \left\lvert u^{n}\right\rvert^2u^n
+\end{equation}
+and second, a fully implicit time stepping scheme with fixed point iteration 
+\begin{align}\label{eq:KgImp}
+&{}\frac{u^{n+1,k+1}-2u^n+u^{n-1}}{(\delta t)^2} -\Delta \frac{u^{n+1,k+1}+2u^n+u^{n-1}}{4} + \frac{u^{n+1,k+1}+2u^n+u^{n-1}}{4} \notag
+\\&{} = \pm \frac{\left\lvert u^{n+1,k}\right\rvert^4-\left\lvert u^{n-1}\right\rvert^4}{u^{n+1,k}-u^{n-1}}
+\end{align}
+which conserves a discrete energy exactly
+\begin{equation}\label{eq:KgImEn}
+\int\frac{1}{2}\left(\frac{u^{n+1}-u^n}{\delta t}\right)^2 + \frac{1}{2}\left(\frac{u^{n+1}+u^n}{2}\right)^2+\frac{1}{2}\left\lvert\nabla\frac{u^{n+1}+u^n}{2}\right\rvert^2 \mp \frac{\left\lvert{u}^{n+1}\right\rvert^4+\left\lvert{u}^{n}\right\rvert^4}{8}.
+\end{equation}
+As before, the superscript $n$ denotes the time step and $k$ denotes the iterate in the fixed point iteration scheme. Iterations are stopped once the difference between two successive iterates falls below a certain tolerance. 
+
+\subsection{Matlab Programs}
+
+Listings \ref{lst:MatKg1D}, \ref{lst:MatKg1Dimp}, \ref{lst:MatKg2D} and \ref{lst:MatKg3D} demonstrate Matlab implementations of these time stepping schemes. In one dimension, the Klein-Gordon equation has easily computable exact solutions, (see for example Nakanishi and Schlag~\cite[p.6]{NakSch11})  which can be used to test the accuracy of the numerical schemes. These equations seem to display three possibilities for the behavior of solutions which are dependent on the initial conditions:
+\begin{itemize}
+\item the solutions could \emph{disperse} or \emph{thermalize}, that is a given localized initial condition spreads out over the entire space 
+\item the solutions blow up or become infinite
+\item a portion of the solution travels around as a localized particle while the rest of the solution disperses.
+\end{itemize}
+Since the equations are reversible, there is also the possibility that a solution which is initially distributed over the spatial domain localizes itself. 
+
+\lstinputlisting[style=matlab_style,label=lst:MatKg1D,caption={A Matlab program to solve the 1-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImEx}.}]{./KleinGordon/Programs/KleinGordon1D.m}
+
+\lstinputlisting[style=matlab_style,label=lst:MatKg1Dimp,caption={A Matlab program to solve the 1-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}.}]{./KleinGordon/Programs/KleinGordon1Dimp.m}
+
+\lstinputlisting[style=matlab_style,label=lst:MatKg2D,caption={A Matlab program to solve the 2-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}.}]{./KleinGordon/Programs/KleinGordonImp2Db.m}
+
+\lstinputlisting[style=matlab_style,label=lst:MatKg3D,caption={A Matlab program to solve the 3-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImEx}.}]{./KleinGordon/Programs/KleinGordon3Dsliceplot.m}
+
+\subsection{A Two-Dimensional OpenMP Fortran Program}
+
+The programs that we have developed in Fortran have become rather long. Here we add subroutines to make the programs shorter and easier to maintain. Listing \ref{lst:For2dKgOmp} is the main Fortran program which uses OpenMP to solve the 2D Klein-Gordon equation. Notice that by using subroutines, we have made the main program significantly shorter and easier to read. It is still not as simple to read as the Matlab program, but is significantly better than some of the previous Fortran programs. It is also much easier to maintain, and once the subroutines have been written and debugged, they may be reused in other programs. The only drawback in using too many subroutines is that one may encounter a slight decrease in performance due to the overhead of calling a subroutine and passing data to it. The subroutines are in listings \ref{lst:For2dKgOmpGrid}, \ref{lst:For2dKgOmpIniDat}, \ref{lst:For2dKgOmpSavDat}, \ref{lst:For2dKgOmpStoOld}, \ref{lst:For2dKgOmpEneCal}, \ref{lst:For2dKgOmpSavRes} and an example makefile is in listing \ref{lst:Makefile2dKgOmp}. Finally listing \ref{lst:MatlabVideoKg} contains a Matlab program which produces pictures from the binary files that have been computed. One can then use another program to take the images and create a video\footnote{At the present time, Matlab's video commands cannot reliably produce a single video from a very long simulation, so it is better to use Matlab to create still images.}.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmp,caption={A Fortran program to solve the 2D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/KgSemiImp2d.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpGrid,caption={A Fortran subroutine to get the grid to solve the 2D Klein-Gordon equation on.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/getgrid.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpIniDat,caption={A Fortran subroutine to get the initial data to solve the 2D Klein-Gordon equation for.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/initialdata.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpSavDat,caption={A Fortran program to save a field from the solution of the 2D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/savedata.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpStoOld,caption={A Fortran subroutine to update arrays when solving the 2D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/storeold.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpEneCal,caption={A Fortran subroutine to calculate the energy when solving the 2D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/enercalc.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dKgOmpSavRes,caption={A Fortran subroutine to save final results after solving the 2D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/saveresults.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:Makefile2dKgOmp,caption={An example makefile for compiling the OpenMP program in listing \ref{lst:For2dKgOmp}.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/makefile}
+
+\lstinputlisting[style=matlab_style,label=lst:MatlabVideoKg,caption={A Matlab program to plot the fields produced by listing \ref{lst:For2dKgOmp}.}]{./KleinGordon/Programs/KleinGordon2dThreadFFT/video.m}
+
+\subsection{A Three-Dimensional MPI Fortran Program using 2DECOMP\&FFT}
+
+We now give a program for the three-dimensional nonlinear Klein-Gordon equation. The program uses the same subroutine structure as the two-dimensional code. To make the program easy to reuse, the subroutine listed in listing \ref{lst:For3dKgMpiReaInp} has been created to read an INPUTFILE which specifies the parameters to use for the program and so the program does not need to be recompiled every time it is run. To enable the program to scale better, the arrays which hold the Fourier frequencies and grid points have also been decomposed so that only the portions of the arrays used on each processor are created and stored on the processor. A further addition is a short postprocessing program to create header files to allow one to use the bov (brick of values) format that allows one to use the parallel visualization software VisIt. The program is listed in listing \ref{lst:For3dKgMpiBovCre}, to use this program simply compile it using gfortran, no special flags are required, and then run it in the directory from which the INPUTFILE and data are stored. The program VisIt can be downloaded from \url{https://wci.llnl.gov/codes/visit/home.html}. This program also run on laptops, desktops as well as parallel computer clusters. Documentation on using VisIt is available here \url{https://wci.llnl.gov/codes/visit/manuals.html} and here \url{http://www.visitusers.org/index.php?title=Main_Page}.  A short video tutorial on how to use VisIt remotely is available at \url{http://cac.engin.umich.edu/resources/software/visit.html}.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpi,caption={A Fortran program to solve the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/KgSemiImp3d.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiGrid,caption={A Fortran subroutine to get the grid to solve the 3D Klein-Gordon equation on.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/getgrid.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiIniDat,caption={A Fortran subroutine to get the initial data to solve the 3D Klein-Gordon equation for.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/initialdata.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiSavDat,caption={A Fortran program to save a field from the solution of the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/savedata.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiStoOld,caption={A Fortran subroutine to update arrays when solving the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/storeold.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiEneCal,caption={A Fortran subroutine to calculate the energy when solving the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/enercalc.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiSavRes,caption={A Fortran subroutine to save final results after solving the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/saveresults.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiReaInp,caption={A Fortran subroutine to read in the parameters to use when solving the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/readinputfile.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:Makefile3dKgMpi,caption={An example makefile for compiling the MPI program in listing \ref{lst:For3dKgMpi}.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/makefile}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dKgMpiBovCre,caption={A Fortran subroutine to create BOV (Brick of Values) header files after solving the 3D Klein-Gordon equation.}]{./KleinGordon/Programs/KleinGordon3dMpiFFT/bovcreate.f90}
+
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Compare the accuracy of the implicit and semi-implicit time stepping schemes in eqs.\ \eqref{eq:KgImEx} and \eqref{eq:KgImp}. Which scheme produces the most accurate results in the least amount of real time?  
+\item[2)] Write serial Fortran programs to solve the two- and three-dimensional Klein-Gordon equations using the fully implicit time stepping scheme in eq.\ \eqref{eq:KgImp}.
+\item[3)] Write OpenMP parallel Fortran programs to solve the two- and three-dimensional Klein-Gordon equations using the fully implicit time stepping scheme in eq.\ \eqref{eq:KgImp}.
+\item[4)] The MPI command MPI\_BCAST is used in the subroutine readinputfile, listed in list \ref{lst:For3dKgMpiReaInp}. Look up this command (possibly using one of the references listed in the introduction to programming section) and explain what it does. 
+\item[5)] Write an MPI parallel Fortran program to solve the two- and three-dimensional Klein-Gordon equations using the fully implicit time stepping scheme in eq.\ \eqref{eq:KgImp}.
+\item[6)] Compare the results of fully three-dimensional simulations with periodic boundary conditions ($\mathbb{T}^3$) with analytical predictions for blow up on the entire real space ($\mathbb{R}^3$) summarized in Donninger and Schlag~\cite{DonSch11}.
+\item[7)] Grenier~\cite[p.~18]{Gre94} explains that the linear Klein-Gordon equation can be written as two coupled Schr\"{o}dinger equations. One can extend this formulation to the nonlinear Klein-Gordon equation. If we let
+\begin{equation}\label{eq:KgSchDecomp1}
+u=\phi+\xi \quad\text{and}\quad\frac{\partial u}{\partial t}=\phi-\xi
+\end{equation}
+then the two coupled equations
+\begin{align}\label{eq:KgSchDecomp2}
+&{} i\frac{\partial }{\partial t}\begin{bmatrix}\phi \\ \xi \end{bmatrix}= \begin{bmatrix} -\Delta  -1 & -\Delta \\ \Delta & \Delta + 1 \end{bmatrix}\begin{bmatrix}\phi \\ \xi \end{bmatrix} \pm\begin{bmatrix}1 \\ -1 \end{bmatrix} \frac{\lvert \phi+\xi\rvert^2(\phi+\xi)}{2}
+\end{align}
+ are equivalent to the nonlinear Klein-Gordon equation
+ \begin{align}\label{eq:KgSchDecomp3}
+ &{}\frac{\partial^2u}{\partial t^2} - \Delta u + u = \pm u^3.
+ \end{align}
+ \begin{enumerate}
+ \item[a)] Fill in the details to explain why eqs.\ \eqref{eq:KgSchDecomp1} and \eqref{eq:KgSchDecomp2} are equivalent to eq.\ \eqref{eq:KgSchDecomp3}. In particular show that by adding and subtracting the two equations in eqs.\ \eqref{eq:KgSchDecomp1} and \eqref{eq:KgSchDecomp2}, we get
+ \begin{align*}
+ &{} i\frac{\partial}{\partial t}\left(\phi+\xi\right)= -\left(\phi-\xi\right)
+ \\&{} i\frac{\partial}{\partial t}\left(\phi-\xi\right)=-\Delta \left(\phi+\xi\right) - \left(\phi+\xi\right) \pm \left\lvert \phi+\xi \right\rvert^2\left(\phi+\xi\right).
+ \end{align*}
+ Differentiating the first of these equations and substituting it into the second, then recalling that we defined $u=\phi+\xi$ in eq.\ \eqref{eq:KgSchDecomp1} gives us the Klein-Gordon equation in eq.\ \eqref{eq:KgSchDecomp3}.
+ \item[b)] Solve these two equations using either the implicit midpoint rule or the Crank Nicolson method.
+ \end{enumerate}
+\end{enumerate}

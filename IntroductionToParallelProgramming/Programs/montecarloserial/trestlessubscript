@@ -1,0 +1,20 @@
+#!/bin/bash
+# the queue to be used.
+#PBS -q shared
+# specify your project allocation
+#PBS -A mia122
+# number of nodes and number of processors per node requested
+#PBS -l nodes=1:ppn=1
+# requested Wall-clock time.
+#PBS -l walltime=00:05:00
+# name of the standard out file to be "output-file".
+#PBS -o job_output
+# name of the job
+#PBS -N MCserial
+# Email address to send a notification to, change "youremail" appropriately 
+#PBS -M youremail@umich.edu
+# send a notification for job abort, begin and end
+#PBS -m abe
+#PBS -V
+cd $PBS_O_WORKDIR #change to the working directory
+mpirun_rsh -np 1 -hostfile $PBS_NODEFILE  montecarloserial

@@ -1,0 +1,84 @@
+ifeq ($(HOST),kraken)
+	# All settings here for use on Kraken, a Cray XT5 system with 2 AMD 6 core
+	# opteron chips per node, 8,256 compute nodes, 16 Gb per node, 
+	# 129 TB of compute memory,  
+	# Need to load fftw module, svn module and PrgEnv-pgi
+
+	COMPILER =  ftn  
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 =  -O2 -r8 -i4 -Kieee
+	LIBS = ${FFTW_LIB} ${IPM} 		
+endif
+
+ifeq ($(HOST),hg1)
+	# All settings here for use on HG1, an parallel intel nehalem cluster 2 quad core
+	# chips 
+
+	COMPILER =  mpif90  
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 = -O3 -r8 -i4 -align -zero -fltconsistency -nofpconstant -check all
+	LIBS = -L/opt/fftw/3.2.2/intel/lib -lfftw3 -lm	
+endif
+
+ifeq ($(HOST),juropa)
+	# All settings here for use on Juropa, a parallel intel nehalem cluster with 2 quad core
+	# chips 
+
+	COMPILER =  mpif90  
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 = -O2 -r8 -i4 -align -zero -fltconsistency -nofpconstant -g -debug -check all -assume buffered_io
+	LIBS = -I/usr/local/fftw/3.2.1/include  -L/usr/local/fftw/3.2.1/lib -lfftw3 -lm		
+endif
+
+ifeq ($(HOST),cooper)
+	# All settings here for use on Cooper, an intel workstation with 2 quad core
+	# chips 
+
+	COMPILER =  mpif90  
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 = -O0 -r8 -i4 -align -zero -mkl -fltconsistency -nofpconstant -g -debug -check all
+	LIBS = -L/usr/local/fftw3/intel -lfftw3		
+endif
+
+ifeq ($(HOST),flux)
+	# All settins here for use on flux, an intel cluster
+
+	COMPILER = mpif90
+	# Complier settings, optimizatoin, precision, parallelization
+	FLAGS1 = -O2 -r8 -i4 -align -zero -mkl -fltconsistency -check all
+endif
+
+ifeq ($(HOST),miller)
+	COMPILER = pgf90
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 = -O2 -mp -r8 -i4 -Mcache_align -Mbounds   
+	FLAGS2 = # -w90 -check format  -g -debug all -check all -implicitnone -warn unused
+	# See if can add compiler flag to terminate execution if there is a NAN		
+	LIBS = -lfftw3 -I/usr/local/fftw/3.2.2-pgi/include  -L/usr/local/fftw/3.2.2-pgi/lib 
+
+	BLASLIB1 = -lnag_acml -lacml -lacml_mv -L/usr/local/nag/pgi/fll6a22dpl/acml -L/usr/local/nag/pgi/fll6a22dpl/lib -L/usr/local/pgi/10.6/linux86-64/10.6/libso
+endif
+
+ifeq ($(HOST),nyx)
+	# All settings here for use on NYX, a mixed cluster at the University of Michigan
+	# Center for Advanced Computing (CAC), primarily using AMD64 hardware, mixture of
+	# quad core and double core processors
+	# Need to load fftw module
+
+	COMPILER =  mpif90  
+	# compilation settings, optimization, precision, parallelization
+	FLAGS1 =  -O2 -r8 -i4 -Kieee -g  -gopt -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mcoff -Mdwarf1 -Mdwarf2 -Mdwarf3 -Melf -Mnodwarf -Mpgicoff -traceback 
+	LIBS = -I/home/software/rhel5/fftw/3.2.1-pgi/include -L/home/software/rhel5/fftw/3.2.1-pgi/lib -lfftw3 		
+endif
+# source list for main program
+SOURCES = bovcreate.f90
+
+bovcreate: $(SOURCES) 
+		$(COMPILER) -o bovcreate $(FLAGS1) $(SOURCES) $(LIBS) 
+# 2>err.out
+
+clean:
+	rm *.o 
+
+clobber: 
+	rm  bovcreate	

@@ -1,0 +1,28 @@
+#!/bin/bash
+#PBS -N NSIncompress
+#PBS -l nodes=1,walltime=00:10:00
+#PBS -l qos=muite_flux
+#PBS -A muite_flux
+#PBS -q flux
+#PBS -M cloutbra@umich.edu
+#PBS -m abe
+#PBS -V
+# Create a local directory to run and copy your files to local.
+# Let PBS handle your output
+mkdir /tmp/${PBS_JOBID}
+cp ${HOME}/2DNavierStokes/NSIncompress /tmp/${PBS_JOBID}/NSIncompress
+cd /tmp/${PBS_JOBID}
+./NSIncompress
+# Clean up your files
+cd
+cd 2DNavierStokes
+# Retrieve your output
+cp /tmp/${PBS_JOBID}/omegafinal.datbin ${HOME}/2DNavierStokes/omegafinal.datbin
+cp /tmp/${PBS_JOBID}/omegaexactfinal.datbin ${HOME}/2DNavierStokes/omegaexactfinal.datbin
+cp /tmp/${PBS_JOBID}/xcoord.dat ${HOME}/2DNavierStokes/xcoord.dat
+cp /tmp/${PBS_JOBID}/ycoord.dat ${HOME}/2DNavierStokes/ycoord.dat
+
+# Moves data to one directory 
+mkdir data
+mv omegafinal.datbin omegaexactfinal.datbin xcoord.dat ycoord.dat data
+/bin/rm -rf /tmp/${PBS_JOBID}

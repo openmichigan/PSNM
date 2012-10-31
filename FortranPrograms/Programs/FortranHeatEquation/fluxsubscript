@@ -1,0 +1,24 @@
+#!/bin/bash
+#PBS -N heatequation
+#PBS -l nodes=1,walltime=00:10:00
+#PBS -l qos=math471f11_flux
+#PBS -A math471f11_flux
+#PBS -q flux 
+#PBS -M your_uniqname@umich.edu
+#PBS -m abe
+#PBS -V
+# Create a local directory to run and copy your files to local.
+# Let PBS handle your output
+mkdir /tmp/${PBS_JOBID}
+cp ${HOME}/ParallelMethods/Heat/heatequation /tmp/${PBS_JOBID}/heatequation 
+cd /tmp/${PBS_JOBID}
+./heatequation
+#Clean up your files
+cd
+cd ParallelMethods/Heat
+# Retrieve your output
+cp /tmp/${PBS_JOBID}/u.dat ${HOME}/ParallelMethods/Heat/u.dat
+cp /tmp/${PBS_JOBID}/xcoord.dat ${HOME}/ParallelMethods/Heat/xcoord.dat
+cp /tmp/${PBS_JOBID}/tdata.dat ${HOME}/ParallelMethods/Heat/tdata.dat
+
+/bin/rm -rf /tmp/${PBS_JOBID}

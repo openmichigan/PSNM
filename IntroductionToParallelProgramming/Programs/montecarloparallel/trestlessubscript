@@ -1,0 +1,23 @@
+#!/bin/bash
+# the queue to be used.
+#PBS -q normal
+# specify your project allocation
+#PBS -A mia122
+# number of nodes and number of processors per node requested
+#PBS -l nodes=1:ppn=32
+# requested Wall-clock time.
+#PBS -l walltime=00:05:00
+# name of the standard out file to be "output-file".
+#PBS -o job_output
+# name of the job, you may want to change this so it is unique to you
+#PBS -N MPI_MCPARALLEL
+# Email address to send a notification to, change "youremail" appropriately 
+#PBS -M youremail@umich.edu
+# send a notification for job abort, begin and end
+#PBS -m abe
+#PBS -V
+
+# change to the job submission directory
+cd $PBS_O_WORKDIR 
+# Run the job
+mpirun_rsh -np 32 -hostfile $PBS_NODEFILE  montecarloparallel

@@ -1,0 +1,16 @@
+#define the complier
+COMPILER = ifort
+# compilation settings, optimization, precision, parallelization
+FLAGS = -O0 
+
+
+# libraries
+LIBS = -L${FFTW_LIB} -lfftw3 -lfftw3f -lm
+# source list for main program
+SOURCES =  NLSsplitting.f90 
+		   
+test: $(SOURCES)
+		${COMPILER} -o NLSsplitting $(FLAGS) $(SOURCES) $(LIBS)   
+		
+clean:
+	rm *.o 

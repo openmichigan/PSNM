@@ -1,0 +1,99 @@
+\contentsline {chapter}{List of Figures}{4}{section*.2}
+\contentsline {chapter}{Program Listings}{5}{section*.4}
+\contentsline {chapter}{\numberline {1}Overview}{13}{chapter.1}
+\contentsline {section}{\numberline {1.1}Summary}{13}{section.1.1}
+\contentsline {section}{\numberline {1.2}Prerequisites}{13}{section.1.2}
+\contentsline {section}{\numberline {1.3}Using the Programs}{14}{section.1.3}
+\contentsline {section}{\numberline {1.4}Course Outlines / Assessment Rubric}{14}{section.1.4}
+\contentsline {chapter}{\numberline {2}Finite Precision Arithmetic}{15}{chapter.2}
+\contentsline {section}{\numberline {2.1}Exercises}{15}{section.2.1}
+\contentsline {chapter}{\numberline {3}Separation of Variables}{17}{chapter.3}
+\contentsline {section}{\numberline {3.1}Exercises}{19}{section.3.1}
+\contentsline {chapter}{\numberline {4}Motivation for Numerical Methods}{20}{chapter.4}
+\contentsline {chapter}{\numberline {5}Timestepping}{21}{chapter.5}
+\contentsline {section}{\numberline {5.1}Forward Euler}{21}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}An Example Computation}{22}{subsection.5.1.1}
+\contentsline {section}{\numberline {5.2}Backwards Euler}{23}{section.5.2}
+\contentsline {section}{\numberline {5.3}Crank-Nicolson}{23}{section.5.3}
+\contentsline {section}{\numberline {5.4}Stability of Forward Euler, Backward Euler and Crank-Nicolson}{24}{section.5.4}
+\contentsline {section}{\numberline {5.5}Stability and Accuracy of Forward Euler, Backward Euler and Crank-Nicolson Time Stepping Schemes for $y'=-\lambda y$}{26}{section.5.5}
+\contentsline {section}{\numberline {5.6}Exercises}{28}{section.5.6}
+\contentsline {chapter}{\numberline {6}One-Dimensional Discrete Fourier Transforms}{29}{chapter.6}
+\contentsline {section}{\numberline {6.1}Fast Fourier Transform}{32}{section.6.1}
+\contentsline {chapter}{\numberline {7}Finding Derivatives using Fourier Spectral Methods}{33}{chapter.7}
+\contentsline {section}{\numberline {7.1}Taking a Derivative in Fourier Space}{33}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}Exercises}{34}{subsection.7.1.1}
+\contentsline {chapter}{\numberline {8}Examples in Matlab}{36}{chapter.8}
+\contentsline {section}{\numberline {8.1}1D Heat Equation}{36}{section.8.1}
+\contentsline {subsection}{\numberline {8.1.1}Forward Euler}{37}{subsection.8.1.1}
+\contentsline {subsection}{\numberline {8.1.2}Backward Euler}{38}{subsection.8.1.2}
+\contentsline {subsection}{\numberline {8.1.3}Exercises}{39}{subsection.8.1.3}
+\contentsline {section}{\numberline {8.2}Nonlinear Equations}{40}{section.8.2}
+\contentsline {subsection}{\numberline {8.2.1}The 1D Allen-Cahn Equation}{40}{subsection.8.2.1}
+\contentsline {subsubsection}{Implicit-Explicit Method}{40}{section*.8}
+\contentsline {subsection}{\numberline {8.2.2}The 2D Allen-Cahn Equation}{42}{subsection.8.2.2}
+\contentsline {subsubsection}{Implicit-Explicit Method}{43}{section*.9}
+\contentsline {subsection}{\numberline {8.2.3}Exercises}{44}{subsection.8.2.3}
+\contentsline {chapter}{\numberline {9}Nonlinear Ordinary Differential Equations and Iteration}{47}{chapter.9}
+\contentsline {section}{\numberline {9.1}Exact Solution to an Example Nonlinear Ordinary Differential Equation}{48}{section.9.1}
+\contentsline {section}{\numberline {9.2}Definitions Required to Prove Convergence}{48}{section.9.2}
+\contentsline {section}{\numberline {9.3}Existence and Uniqueness of Solutions to Ordinary Differential Equations}{49}{section.9.3}
+\contentsline {section}{\numberline {9.4}Backward Euler}{49}{section.9.4}
+\contentsline {section}{\numberline {9.5}Convergence of Functional Iteration}{49}{section.9.5}
+\contentsline {subsection}{\numberline {9.5.1}Convergence of the Fixed-Point Method}{49}{subsection.9.5.1}
+\contentsline {subsection}{\numberline {9.5.2}Convergence of Newton's Method}{50}{subsection.9.5.2}
+\contentsline {section}{\numberline {9.6}Convergence of the Theta Method}{51}{section.9.6}
+\contentsline {section}{\numberline {9.7}Example Programs which use Iteration to Solve a Nonlinear Ordinary Differential Equation}{55}{section.9.7}
+\contentsline {section}{\numberline {9.8}Exercises}{56}{section.9.8}
+\contentsline {chapter}{\numberline {10}Fortran Programs}{58}{chapter.10}
+\contentsline {section}{\numberline {10.1}Example Programs}{58}{section.10.1}
+\contentsline {section}{\numberline {10.2}Exercises}{64}{section.10.2}
+\contentsline {chapter}{\numberline {11}Introduction to Parallel Programming}{66}{chapter.11}
+\contentsline {section}{\numberline {11.1}Overview of OpenMP and MPI}{66}{section.11.1}
+\contentsline {section}{\numberline {11.2}OpenMP}{67}{section.11.2}
+\contentsline {subsection}{\numberline {11.2.1}OpenMP Exercises}{67}{subsection.11.2.1}
+\contentsline {section}{\numberline {11.3}MPI}{70}{section.11.3}
+\contentsline {subsection}{\numberline {11.3.1}MPI Exercises}{71}{subsection.11.3.1}
+\contentsline {section}{\numberline {11.4}A first parallel program: Monte Carlo Integration}{74}{section.11.4}
+\contentsline {subsection}{\numberline {11.4.1}Probability}{74}{subsection.11.4.1}
+\contentsline {subsection}{\numberline {11.4.2}Exercise}{75}{subsection.11.4.2}
+\contentsline {subsection}{\numberline {11.4.3}Riemann Integration}{76}{subsection.11.4.3}
+\contentsline {subsection}{\numberline {11.4.4}Exercises}{77}{subsection.11.4.4}
+\contentsline {subsection}{\numberline {11.4.5}Monte Carlo Integration}{77}{subsection.11.4.5}
+\contentsline {subsection}{\numberline {11.4.6}Exercises}{80}{subsection.11.4.6}
+\contentsline {subsection}{\numberline {11.4.7}Parallel Monte Carlo Integration}{81}{subsection.11.4.7}
+\contentsline {subsubsection}{Serial}{81}{section*.10}
+\contentsline {subsubsection}{Parallel}{83}{section*.11}
+\contentsline {subsection}{\numberline {11.4.8}Exercises}{86}{subsection.11.4.8}
+\contentsline {chapter}{\numberline {12}The Cubic Nonlinear Schr\"{o}dinger Equation}{88}{chapter.12}
+\contentsline {section}{\numberline {12.1}Background}{88}{section.12.1}
+\contentsline {section}{\numberline {12.2}Splitting}{89}{section.12.2}
+\contentsline {section}{\numberline {12.3}Exercises}{90}{section.12.3}
+\contentsline {section}{\numberline {12.4}Serial}{91}{section.12.4}
+\contentsline {subsection}{\numberline {12.4.1}Example Matlab Programs for the Nonlinear Schr\"{o}dinger Equation}{91}{subsection.12.4.1}
+\contentsline {section}{\numberline {12.5}Example One-Dimensional Fortran Program for the Nonlinear Schr\"{o}dinger Equation}{96}{section.12.5}
+\contentsline {section}{\numberline {12.6}Shared Memory Parallel: OpenMP}{100}{section.12.6}
+\contentsline {section}{\numberline {12.7}Exercises}{108}{section.12.7}
+\contentsline {section}{\numberline {12.8}Distributed Memory Parallel: MPI}{119}{section.12.8}
+\contentsline {section}{\numberline {12.9}Exercises}{134}{section.12.9}
+\contentsline {chapter}{\numberline {13}The Two- and Three-Dimensional Navier-Stokes Equations}{135}{chapter.13}
+\contentsline {section}{\numberline {13.1}Background}{135}{section.13.1}
+\contentsline {section}{\numberline {13.2}The Two-Dimensional Case}{135}{section.13.2}
+\contentsline {section}{\numberline {13.3}The Three-Dimensional Case}{138}{section.13.3}
+\contentsline {section}{\numberline {13.4}Serial Programs}{139}{section.13.4}
+\contentsline {subsection}{\numberline {13.4.1}Exercises}{145}{subsection.13.4.1}
+\contentsline {section}{\numberline {13.5}Parallel Programs: OpenMP}{146}{section.13.5}
+\contentsline {subsection}{\numberline {13.5.1}Exercises}{170}{subsection.13.5.1}
+\contentsline {section}{\numberline {13.6}Parallel Programs: MPI}{170}{section.13.6}
+\contentsline {subsection}{\numberline {13.6.1}Exercises}{188}{subsection.13.6.1}
+\contentsline {chapter}{\numberline {14}The Klein-Gordon Equation}{190}{chapter.14}
+\contentsline {section}{\numberline {14.1}Background}{190}{section.14.1}
+\contentsline {subsection}{\numberline {14.1.1}Matlab Programs}{191}{subsection.14.1.1}
+\contentsline {subsection}{\numberline {14.1.2}A Two-Dimensional OpenMP Fortran Program}{201}{subsection.14.1.2}
+\contentsline {subsection}{\numberline {14.1.3}A Three-Dimensional MPI Fortran Program using 2DECOMP\&FFT}{219}{subsection.14.1.3}
+\contentsline {subsection}{\numberline {14.1.4}Exercises}{245}{subsection.14.1.4}
+\contentsline {chapter}{\numberline {A}GPU programs for Fourier pseudospectral simulations of the Navier-Stokes, Cubic Nonlinear Schr\"{o}dinger and sine Gordon equations}{252}{appendix.A}
+\contentsline {section}{\numberline {A.1}2D Navier Stokes Equations}{252}{section.A.1}
+\contentsline {section}{\numberline {A.2}2D Cubic Nonlinear Schr\"{o}dinger Equations}{272}{section.A.2}
+\contentsline {section}{\numberline {A.3}2D sine-Gordon Equations}{293}{section.A.3}
+\contentsline {chapter}{\numberline {B}Python Programs}{309}{appendix.B}

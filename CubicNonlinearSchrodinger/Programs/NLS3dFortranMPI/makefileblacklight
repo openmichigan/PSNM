@@ -1,0 +1,19 @@
+
+COMPILER =  ifort 
+decompdir=../2decomp_fft
+FLAGS = -O0 
+	
+DECOMPLIB = -I${decompdir}/include -L${decompdir}/lib -l2decomp_fft
+LIBS = -L${FFTW_LIB} -lfftw3 -lmpi 
+SOURCES = NLSsplitting.f90  
+
+NLSsplitting: $(SOURCES)
+		${COMPILER} -o NLSsplitting $(FLAGS) $(SOURCES) $(DECOMPLIB) $(LIBS) 
+
+
+clean:
+	rm -f *.o
+	rm -f *.mod
+clobber:	
+	rm -f NLSsplitting
+

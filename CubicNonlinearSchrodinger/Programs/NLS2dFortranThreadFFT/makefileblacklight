@@ -1,0 +1,23 @@
+#define the complier
+COMPILER = ifort
+# compilation settings, optimization, precision, parallelization
+FLAGS = -O0 -openmp 
+
+# libraries
+INCS = -I${FFTW_INC}
+LIBS = -L${FFTW_LIB}  -lfftw3_threads -lfftw3    
+# source list for main program
+SOURCES =  NLSsplitting.f90 
+OBJECTS = NLSsplitting.o
+
+NLSsplitting: $(OBJECTS)
+		${COMPILER} $(FLAGS) -o NLSsplitting  $(OBJECTS) $(LIBS)   
+		   
+NLSsplitting.o: $(SOURCES)
+		${COMPILER} $(FLAGS) -c $(INCS) $(SOURCES)   
+		
+clean:
+	rm *.o 
+
+clobber:
+	rm NLSsplitting

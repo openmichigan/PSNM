@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N helloworld
+#PBS -l nodes=1:ppn=2,walltime=00:02:00
+#PBS -q flux
+#PBS -l qos=math471f11_flux
+#PBS -A math471f11_flux
+#PBS -M your_uniqname@umich.edu
+#PBS -m abe
+#PBS -V
+#
+# Create a local directory to run and copy your files to local.
+# Let PBS handle your output
+mkdir /tmp/${PBS_JOBID}
+cp ${HOME}/ParallelMethods/helloworldOMP/helloworld /tmp/${PBS_JOBID}/helloworld 
+cd /tmp/${PBS_JOBID}
+
+export OMP_NUM_THREADS=2
+./helloworld
+
+#Clean up your files
+cd ${HOME}/ParallelMethods/helloworldOMP
+/bin/rm -rf /tmp/${PBS_JOBID} 

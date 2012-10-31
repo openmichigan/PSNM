@@ -1,0 +1,39 @@
+\chapter{Finding Derivatives using Fourier Spectral Methods}
+Spectral methods are a class of numerical techniques that often utilize the FFT. Spectral methods can be implemented easily in Matlab, but there are some conventions to note. First note that Matlab's ``fft'' and ``ifft'' functions store wave numbers in a different order than has been used so far. The wave numbers in Matlab and in most other FFT packages are ordered, $0,1,...,\frac{n}{2},-\frac{n}{2}+1,-\frac{n}{2}+2,...,-1$. Secondly, Matlab does not take full advantage of real input data. The DFT of real data satisfies the symmetry property $\hat{v}(-k)=\hat{v}(k)$, so it is only necessary to compute half of the wave numbers. Matlab's ``fft" command does not take full advantage of this property and wastes memory storing both the positive and negative wave numbers. Third, spectral accuracy (exponential decay of the magnitude of the Fourier coefficients) is better for smooth functions, so where possible be sure your initial conditions are smooth -- \textbf{When using a Fourier spectral method this requires that your initial conditions are periodic}.
+%%%%%%%%
+% subsection
+%%%%%%%%
+\section{Taking a Derivative in Fourier Space}
+Let $u(x)$ be a function which is sampled at the $n$ discrete points $x_i \in {h,2h,...,ih,..,2\pi-h,2\pi}$ and $h=2\pi/n$ in real space. Now take the FFT
+\begin{eqnarray}
+\text{FFT}(u_j) \equiv \hat{u}_k \qquad \text{where} \quad k \in {\frac{-n}{2}+1,...\frac{n}{2}}.
+\end{eqnarray}
+The Fourier transform of $\frac{\partial^2 u_j}{\partial x^2}$ can be easily computed from $\hat{u}_k$\footnote{More details can be found in Trefethen~\cite[Chap. 3]{Tre00}}:
+\begin{eqnarray}
+\textrm{FFT}(\frac{\partial^\nu u_j}{\partial x^\nu}) \equiv (ik)^\nu \hat{u}_k \qquad \text{where} \quad \hat{u}_{n/2}=0 \quad, \text{if \quad $\nu$ \quad \text{is odd}}. \label{eq:Spectral_Method_Deriv}
+\end{eqnarray}
+Thus, differentiation in real space becomes multiplication in Fourier space. We can then take the inverse fast Fourier Transform (IFFT) to yield a solution in real space. In the next section we will use this technique to implement forward Euler and backward Euler timestepping schemes to compute solutions for several PDEs.
+
+%subsection
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Let $u(x)=\sum_k \hat{u}_k \exp(ikx)$ be the Fourier series representation of a function $u(x)$. Explain why 
+$$\frac{\mathrm{d}^{\nu}u}{\mathrm{d}x^{\nu}}=\sum (ik)^{\nu}\hat{u}_k,$$
+provided the series converges.
+\item[2)] \footnote{This question was prompted by an REU and UROP project due to Sudarshan Balakrishan which is available at \url{http://www.math.lsa.umich.edu/undergrad/REU/projects.html}.} Consider the linear KdV equation
+$$u_t+u_{xxx}=0$$
+with periodic boundary conditions for $x\in(0,2\pi]$ and the initial data
+\begin{align*}
+&{} u(x,0)= \left\{{0\quad\textup{ if } 0< x\leq\pi}\atop{1\quad\textup{ if } \pi<x\leq2\pi }\right.
+\end{align*}
+\begin{enumerate}
+\item[a)] Using separation of variables, show that the ``solution'' is
+$$u(t,x)=\frac{1}{2}-\frac{2}{\pi}\sum_{j=0}^{\infty}\frac{\sin((2j+1)x-(2j+1)^3t)}{2j+1}.$$
+Quotation marks are used because the expression for the solution that is given does not converge when differentiated either once in time or twice in space.
+\item[b)] As explained by Olver~\cite{Olv10}, this solution has a fractal structure at times that are an irrational multiple of $\pi$ and a quantized structure at times that are rational multiples of $\pi$. The Matlab program in listing \ref{lst:DispQuant} uses the Fast Fourier transform to find a solution to the linearized KdV equation.  Explain how this program finds a solution to the linearized KdV equation.
+\item[c)] Compare the numerical solution produced by the Matlab program with the analytical solution. Try to determine which is more accurate and see if you can find evidence or an explanation to support your suggestions.
+\end{enumerate}
+
+\lstinputlisting[style=matlab_style,label=lst:DispQuant,caption={A Matlab program which solves the linearized KdV equation using the Fast Fourier transform.}]{./FindingDerivatives/Programs/DispQuant.m}
+ 
+\end{enumerate}

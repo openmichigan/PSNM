@@ -1,0 +1,434 @@
+                                                                     
+                                                                     
+                                                                     
+                                             
+ 	!--------------------------------------------------------------------
+	!
+	! PURPOSE
+	!
+	! This program numerically solves the 2D incompressible Navier-Stokes
+	! on a Square Domain [0,1]x[0,1] using pseudo-spectral methods and
+	! Crank-Nicolson timestepping. The numerical solution is compared to
+	! the exact Taylor-Green Vortex Solution. 
+	!
+	! AUTHORS
+	!
+	! B. Cloutier, B.K. Muite, P. Rigge
+	! 4 June 2012
+	!
+	! Periodic free-slip boundary conditions and Initial conditions:
+	!	u(x,y,0)=sin(2*pi*x)cos(2*pi*y)
+	!	v(x,y,0)=-cos(2*pi*x)sin(2*pi*y)
+	! Analytical Solution (subscript denote derivatives):
+	!	u(x,y,t)=sin(2*pi*x)cos(2*pi*y)exp(-8*pi^2*t/Re)
+	!	v(x,y,t)=-cos(2*pi*x)sin(2*pi*y)exp(-8*pi^2*t/Re)
+	!   u_y(x,y,t)=-2*pi*sin(2*pi*x)sin(2*pi*y)exp(-8*pi^2*t/Re)
+	!	v_x(x,y,t)=2*pi*sin(2*pi*x)sin(2*pi*y)exp(-8*pi^2*t/Re)
+	!	omega=v_x-u_y
+	!
+	! .. Parameters ..
+	!  Nx				= number of modes in x - power of 2 for FFT
+	!  Ny				= number of modes in y - power of 2 for FFT
+	!  nplots			= number of plots produced
+	!  plotgap			= number of timesteps inbetween plots
+	!  Re 				= dimensionless Renold's number
+	!  ReInv			= 1/Re for optimization
+	!  dt				= timestep size 
+	!  dtInv			= 1/dt for optimization
+	!  tol				= determines when convergences is reached
+	!  numthreads		= number of CPUs used in calculation
+	! .. Scalars ..
+	!  i				= loop counter in x direction
+	!  j				= loop counter in y direction
+	!  n				= loop counter for timesteps direction	
+	!  allocatestatus	= error indicator during allocation
+	!  time				= times at which data is saved
+	!  chg				= error at each iteration	
+	! .. Arrays (gpu) ..
+	!  omeg_d				= vorticity	in real space
+	!  omeghat_d			= 2D Fourier transform of vorticity
+	!						at next iterate
+	!  omegoldhat_d		= 2D Fourier transform of vorticity at previous
+	!						iterate
+	!  nloldhat_d			= nonlinear term in Fourier space
+	!						at previous iterate
+	!  psihat_d			= 2D Fourier transform of streamfunction
+	!						at next iteration
+	!  temp1_d/temp2_d/temp3_d		= reusable complex/real space used for
+	!								calculations. This reduces number of
+	!								arrays stored.
+	! .. Vectors (gpu) ..
+	!  kx_d				= fourier frequencies in x direction
+	!  ky_d				= fourier frequencies in y direction
+	!  x_d				= x locations
+	!  y_d				= y locations
+	!  name_config		= array to store filename for data to be saved    		
+	! REFERENCES
+	!
+	! ACKNOWLEDGEMENTS
+	!
+	! ACCURACY
+	!		
+	! ERROR INDICATORS AND WARNINGS
+	!
+	! FURTHER COMMENTS
+	! This program has not been fully optimized.
+	!--------------------------------------------------------------------	
+	module precision
+	! Precision control
+
+	integer, parameter, public :: Single = kind(0.0) ! Single precision
+	integer, parameter, public :: Double = kind(0.0d0) ! Double precision
+
+	integer, parameter, public :: fp_kind = Double
+	!integer, parameter, public :: fp_kind = Single
+
+	end module precision
+
+	module cufft
+
+	integer, public :: CUFFT_FORWARD = -1
+	integer, public :: CUFFT_INVERSE = 1
+	integer, public :: CUFFT_R2C = Z'2a' ! Real to Complex (interleaved)
+	integer, public :: CUFFT_C2R = Z'2c' ! Complex (interleaved) to Real
+	integer, public :: CUFFT_C2C = Z'29' ! Complex to Complex, interleaved
+	integer, public :: CUFFT_D2Z = Z'6a' ! Double to Double-Complex
+	integer, public :: CUFFT_Z2D = Z'6c' ! Double-Complex to Double
+	integer, public :: CUFFT_Z2Z = Z'69' ! Double-Complex to Double-Complex
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!
+	! cufftPlan2d(cufftHandle *plan, int nx,int ny, cufftType type)
+	!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	interface cufftPlan2d
+	subroutine cufftPlan2d(plan, nx, ny, type) bind(C,name='cufftPlan2d')
+	use iso_c_binding
+	integer(c_int):: plan
+	integer(c_int),value:: nx, ny, type
+	end subroutine cufftPlan2d
+	end interface cufftPlan2d
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!
+	! cufftDestroy(cufftHandle plan)
+	!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	interface cufftDestroy
+	subroutine cufftDestroy(plan) bind(C,name='cufftDestroy')
+	use iso_c_binding
+	integer(c_int),value:: plan
+	end subroutine cufftDestroy
+	end interface cufftDestroy
+
+	interface cufftExecD2Z
+    subroutine cufftExecD2Z(plan, idata, odata) &
+          & bind(C,name='cufftExecD2Z')
+       use iso_c_binding
+       use precision
+       integer(c_int),  value  :: plan
+       real(fp_kind),   device :: idata(1:nx,1:ny)
+       complex(fp_kind),device :: odata(1:nx,1:ny)
+    end subroutine cufftExecD2Z
+	end interface cufftExecD2Z
+
+	interface cufftExecZ2D
+    subroutine cufftExecZ2D(plan, idata, odata) &
+          & bind(C,name='cufftExecZ2D')
+       use iso_c_binding
+       use precision
+       integer(c_int),value:: plan
+       complex(fp_kind),device:: idata(1:nx,1:ny)
+       real(fp_kind),device :: odata(1:nx,1:ny)
+    end subroutine cufftExecZ2D
+	end interface cufftExecZ2D	
+	
+	end module cufft
+	
+	PROGRAM main	
+	use precision
+	use cufft
+	! declare variables
+    IMPLICIT NONE		
+    INTEGER(kind=4), PARAMETER		::  Nx=4096
+	INTEGER(kind=4), PARAMETER 		::  Ny=4096	
+	INTEGER(kind=8)	 				::  temp=10000000
+	REAL(fp_kind), PARAMETER		::  dt=0.000125d0	!dt=0.000002d0
+	REAL(fp_kind), PARAMETER		::  dtInv=1.0d0/REAL(dt,kind(0d0))   
+	REAL(fp_kind), PARAMETER	&
+		::  pi=3.14159265358979323846264338327950288419716939937510d0
+	REAL(fp_kind), PARAMETER		::  Re=1.0d0		
+	REAL(fp_kind), PARAMETER		::	ReInv=1.0d0/REAL(Re,kind(0d0))
+	REAL(fp_kind), PARAMETER		::	tol=0.1d0**10
+	REAL(fp_kind)					::  scalemodes,chg
+	INTEGER(kind=4), PARAMETER		::	nplots=1,plotgap=20				
+	REAL(fp_kind),DIMENSION(:), ALLOCATABLE		::  x,y
+	REAL(fp_kind),DIMENSION(:,:), ALLOCATABLE	::	omeg,omegexact
+	INTEGER(kind=4)								::  i,j,n,t, AllocateStatus
+	INTEGER(kind=4)								::  planz2d,pland2z, kersize
+	!variables used for saving data and timing		
+	INTEGER(kind=4)								::	start, finish, count_rate,count, iol	
+	CHARACTER*100			 					::  name_config
+	! Declare variables for GPU	
+	REAL(fp_kind), DEVICE, DIMENSION(:,:), ALLOCATABLE		::	omeg_d,nl_d, temp2_d,&
+																temp3_d
+	COMPLEX(fp_kind), DEVICE, DIMENSION(:,:), ALLOCATABLE	:: omegoldhat_d, nloldhat_d,&
+																omeghat_d, nlhat_d, psihat_d,&
+																temp1_d								
+	COMPLEX(fp_kind), DEVICE, DIMENSION(:), ALLOCATABLE		::  kx_d,ky_d						
+	REAL(kind=8),DEVICE, DIMENSION(:), ALLOCATABLE			::  x_d,y_d
+
+	kersize=min(Nx,256)
+	PRINT *,'Program starting'
+    	PRINT *,'Grid:',Nx,'X',Ny
+	PRINT *,'dt:',dt	
+	ALLOCATE(x(1:Nx),y(1:Ny),omeg(1:Nx,1:Ny),omegexact(1:Nx,1:Ny),&
+			stat=AllocateStatus)
+	IF (AllocateStatus .ne. 0) STOP		
+	PRINT *,'Allocated CPU arrays'
+	ALLOCATE(kx_d(1:Nx/2+1),ky_d(1:Ny),x_d(1:Nx),y_d(1:Ny),omeg_d(1:Nx,1:Ny),&
+			omegoldhat_d(1:Nx/2+1,1:Ny),nloldhat_d(1:Nx/2+1,1:Ny),&
+			omeghat_d(1:Nx/2+1,1:Ny),nl_d(1:Nx,1:Ny),&
+			nlhat_d(1:Nx/2+1,1:Ny),psihat_d(1:Nx/2+1,1:Ny),temp1_d(1:Nx/2+1,1:Ny),&
+			temp2_d(1:Nx,1:Ny),temp3_d(1:Nx,1:Ny),stat=AllocateStatus)	
+	IF (AllocateStatus .ne. 0) STOP 
+	PRINT *,'Allocated GPU arrays'
+	CALL cufftPlan2D(pland2z,nx,ny,CUFFT_D2Z)
+	CALL cufftPlan2D(planz2d,nx,ny,CUFFT_Z2D)	
+	PRINT *,'Setup FFTs'
+
+	! setup fourier frequencies
+	!$cuf kernel do <<< *,* >>>
+	DO i=1,Nx/2+1
+		kx_d(i)= 2.0d0*pi*cmplx(0.0d0,1.0d0)*REAL(i-1,kind=fp_kind)  			
+	END DO
+	kx_d(1+Nx/2)=0.0d0
+	!$cuf kernel do <<< *,* >>>
+	DO i=1,Nx
+		x_d(i)=REAL(i-1,kind(0d0))/REAL(Nx,kind=fp_kind) 
+	END DO
+	!$cuf kernel do <<< *,* >>>
+	DO j=1,Ny/2+1
+		ky_d(j)= 2.0d0*pi*cmplx(0.0d0,1.0d0)*REAL(j-1,kind=fp_kind)  			
+	END DO	
+ 	ky_d(1+Ny/2)=0.0d0
+  	!$cuf kernel do <<< *,* >>>
+	DO j = 1,Ny/2 -1
+		ky_d(j+1+Ny/2)=-ky_d(1-j+Ny/2)
+	END DO	
+	!$cuf kernel do <<< *, * >>>
+	DO j=1,Ny
+		y_d(j)=REAL(j-1,kind(0d0))/REAL(Ny,kind=fp_kind) 
+	END DO	
+	scalemodes=1.0d0/REAL(Nx*Ny,kind=fp_kind)
+	PRINT *,'Setup grid and fourier frequencies'
+
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			omeg_d(i,j)=4.0d0*pi*sin(2.0d0*pi*x_d(i))*sin(2.0d0*pi*y_d(j))!+0.01d0*cos(2.0d0*pi*y_d(j))
+		END DO
+	END DO
+	CALL cufftExecD2Z(pland2z,omeg_d,omeghat_d) 
+	
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!get initial nonlinear term using omeghat to find psihat, u, and v!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx/2+1
+			psihat_d(i,j)=-omeghat_d(i,j)/(kx_d(i)*kx_d(i)+ky_d(j)*ky_d(j)+0.10d0**14)
+		END DO
+	END DO
+	
+ 	!$cuf kernel do <<<  *,*  >>> 				
+	DO j=1,Ny
+		DO i=1,Nx/2+1
+			temp1_d(i,j)=psihat_d(i,j)*ky_d(j)*scalemodes
+		END DO
+	END DO				
+	CALL cufftExecZ2D(planz2d,temp1_d,temp3_d) !u
+	
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx/2+1
+			temp1_d(i,j)=omeghat_d(i,j)*kx_d(i)
+		END DO
+	END DO
+	CALL cufftExecZ2D(planz2d,temp1_d,temp2_d) !omega_x
+	
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			nl_d(i,j)=temp3_d(i,j)*temp2_d(i,j)
+		END DO
+	END DO
+	
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx/2+1
+			temp1_d(i,j)=-psihat_d(i,j)*kx_d(i)*scalemodes
+		END DO
+	END DO		
+	CALL cufftExecZ2D(planz2d,temp1_d,temp3_d) !v
+
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx/2+1
+			temp1_d(i,j)=omeghat_d(i,j)*ky_d(j)
+		END DO
+	END DO
+	CALL cufftExecZ2D(planz2d,temp1_d,temp2_d) !omega_y
+	
+	!combine to get full nonlinear term in real space
+ 	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			nl_d(i,j)=(nl_d(i,j)+temp3_d(i,j)*temp2_d(i,j))*scalemodes
+		END DO
+	END DO
+	CALL cufftExecD2Z(pland2z,nl_d,nlhat_d) 
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+	temp2_d=omeg_d !omegacheck
+	PRINT *,'Got initial data, starting timestepping'	
+	CALL system_clock(start,count_rate)
+	DO t=1,nplots
+		DO n=1,plotgap
+			chg=1.0d0
+			nloldhat_d=nlhat_d
+			omegoldhat_d=omeghat_d
+			DO WHILE (chg>tol)
+			  	!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						omeghat_d(i,j)=((dtInv+0.5d0*ReInv*(kx_d(i)*kx_d(i)+ky_d(j)*ky_d(j)))&
+								*omegoldhat_d(i,j) - 0.5d0*(nloldhat_d(i,j)+nlhat_d(i,j)))&
+								/(dtInv-0.5d0*ReInv*(kx_d(i)*kx_d(i)+ky_d(j)*ky_d(j)))   
+					END DO
+				END DO 
+			    !$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						psihat_d(i,j)=-omeghat_d(i,j)/(kx_d(i)*kx_d(i)+ky_d(j)*ky_d(j)+0.10d0**14)
+					END DO
+				END DO
+				CALL cufftExecZ2D(planz2d,omeghat_d,omeg_d)
+				
+				!check for convergence
+				chg=0.0d0
+			    !$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx
+						chg=chg+(omeg_d(i,j)-temp2_d(i,j))*(omeg_d(i,j)-temp2_d(i,j))&
+						*scalemodes*scalemodes
+					END DO
+				END DO
+				
+				!!!!!!!!!!!!!!!!
+				!nonlinear term!
+				!!!!!!!!!!!!!!!!			
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>> 				
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						temp1_d(i,j)=psihat_d(i,j)*ky_d(j)*scalemodes
+					END DO
+				END DO				
+				CALL cufftExecZ2D(planz2d,temp1_d,temp3_d) !u
+				
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						temp1_d(i,j)=omeghat_d(i,j)*kx_d(i)
+					END DO
+				END DO
+				CALL cufftExecZ2D(planz2d,temp1_d,temp2_d) !omega_x
+				
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx
+						nl_d(i,j)=temp3_d(i,j)*temp2_d(i,j)
+					END DO
+				END DO
+				
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						temp1_d(i,j)=-psihat_d(i,j)*kx_d(i)*scalemodes
+					END DO
+				END DO		
+				CALL cufftExecZ2D(planz2d,temp1_d,temp3_d) !v
+
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx/2+1
+						temp1_d(i,j)=omeghat_d(i,j)*ky_d(j)
+					END DO
+				END DO
+				CALL cufftExecZ2D(planz2d,temp1_d,temp2_d) !omega_y
+				
+				!combine to get full nonlinear term in real space
+				!$cuf kernel do(2) <<< (2,*), (kersize,1) >>>
+				DO j=1,Ny
+					DO i=1,Nx
+						nl_d(i,j)=(nl_d(i,j)+temp3_d(i,j)*temp2_d(i,j))*scalemodes
+					END DO
+				END DO
+				CALL cufftExecD2Z(pland2z,nl_d,nlhat_d) 
+				!!!!!!!!!!!!!!!!
+				
+				temp2_d=omeg_d !save omegacheck
+			END DO
+		END DO	
+		!PRINT *, t*plotgap*dt
+	END DO
+	CALL system_clock(finish,count_rate)
+	PRINT*,'Program took ',REAL(finish-start)/REAL(count_rate),&
+			'for Time stepping'
+	
+	! Copy grid back to host
+	x=x_d
+	y=y_d		
+	omeg=omeg_d
+	
+	!get exact omega
+	DO j=1,Ny
+		DO i=1,Nx
+			omegexact(i,j)=4.0d0*pi*sin(2.0d0*pi*x(i))*&
+				sin(2.0d0*pi*y(j))*exp(-8.0d0*ReInv*pi**2*nplots*plotgap*dt)
+		END DO
+	END DO
+	!compute max error
+	PRINT *,'Max Error:',maxval(abs(omeg*scalemodes-omegexact))	
+
+	temp=temp+1
+	write(name_config,'(a,i0,a)') 'omega',temp,'.datbin'
+	INQUIRE(iolength=iol) omeg(1,1)
+	OPEN(unit=11,FILE=name_config,form="unformatted", access="direct",recl=iol) 
+	count = 1	
+	DO j=1,Ny
+		DO i=1,Nx
+			WRITE(11,rec=count) omeg(i,j)*scalemodes
+			count=count+1
+		END DO
+	END DO
+	CLOSE(11)
+	
+	CALL cufftDestroy(planz2d)
+	CALL cufftDestroy(pland2z)
+	PRINT *,'Destroyed fft plan'
+	
+	DEALLOCATE(x,y,omeg,omegexact,stat=AllocateStatus)	
+	IF (AllocateStatus .ne. 0) STOP
+	PRINT *,'Deallocated CPU memory'
+	
+	DEALLOCATE(kx_d,ky_d,x_d,y_d,&
+			omeg_d,omegoldhat_d, nloldhat_d,omeghat_d,&
+			nl_d, nlhat_d,temp1_d,temp2_d,temp3_d,&
+			psihat_d,stat=AllocateStatus)	
+	IF (AllocateStatus .ne. 0) STOP
+	PRINT *,'Deallocated GPU memory'
+	PRINT *,'Program execution complete'
+	END PROGRAM main

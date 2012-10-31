@@ -1,0 +1,211 @@
+\chapter{The Cubic Nonlinear Schr\"{o}dinger Equation}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Background}
+
+The cubic nonlinear Schr\"{o}dinger equation occurs in a variety of areas, including, quantum mechanics, nonlinear optics and surface water waves. A general introduction can be found at \url{http://en.wikipedia.org/wiki/Schrodinger_equation} and \url{http://en.wikipedia.org/wiki/Nonlinear_Schrodinger_equation}. A mathematical introduction to Schr\"{o}dinger equations can be found in Sulem and Sulem~\cite{SulSul99} and Yang~\cite{Yan10}. In this section we will introduce the idea of operator splitting and then go on to explain how this can be applied to the nonlinear Schr\"{o}dinger equation in one, two and three dimensions. In one dimension, one can show that the cubic nonlinear Schr\"{o}dinger equation is subcritical, and hence one has solutions which exist for all time. In two dimensions, it is $H^1$ critical, and so solutions may exhibit blow-up of the $H^1$ norm, that is the integral of the square of the gradient of the solution can become infinite in finite time.  Finally, in three dimensions, the nonlinear Schr\"{o}dinger equation is $L^2$ supercritical, and so the integral of the square of the solution can also become infinite in finite time. For an introduction to norms and Hilbert spaces, see a textbook on partial differential equations or analysis, such as Evans~\cite{Eva10}, Linares and Ponce~\cite{LinPon09}, Lieb and Loss~\cite{LieLos03} or Renardy and Rogers~\cite{RenRog04}. A question of interest is how this blow-up occurs and numerical simulations are often used to understand this; see Sulem and Sulem~\cite{SulSul99} for examples of this. The cubic nonlinear Schr\"{o}dinger equation\footnote{To simplify the presentation, we primarily consider the focusing cubic nonlinear Schr\"{o}dinger equation.} is given by
+\begin{equation}
+i\psi_t + \Delta \psi \pm\lvert \psi \rvert^2\psi =0,
+\end{equation}
+where $\psi$ is the wave function and $\Delta$ is the Laplacian operator, so in one dimension it is $\partial_{xx}$, in two dimensions, $\partial_{xx}+\partial_{yy}$ and in three dimensions it is $\partial_{xx}+\partial_{yy}+\partial_{zz}$. The $+$ corresponds to the focusing cubic nonlinear Schr\"{o}dinger equation and the $-$ corresponds to the defocusing cubic nonlinear Schr\"{o}dinger equation. This equation has many conserved quantities, including the ``mass'',
+\begin{equation}
+\int_{\Omega}\lvert\psi\rvert^2\mathrm{d}^n\bm x
+\end{equation}
+and the ``energy'',
+\begin{equation}
+\int_{\Omega}\frac{1}{2}\lvert\nabla \psi\rvert^2\mp\frac{1}{4}\lvert\psi\rvert^4\mathrm{d}^n\bm x
+\end{equation}
+where $n$ is the dimension and $\Omega$ is the domain of the solution. As explained by Klein~\cite{Kle08}, these two quantities can provide useful checks on the accuracy of numerically generated solutions.
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Splitting}
+
+We will consider a numerical method to solve this equation known as splitting. This method occurs in several applications, and is a useful numerical method when the equation can be split into two separate equations, each of which can either be solved exactly, or each part is best solved by a different numerical method. Introductions to splitting can be found in Holden et al.~\cite{HolKarLieRis10}, McLachlan and Quispel~\cite{McLQui02}, Thalhammer~\cite{Tha08}, Shen, Tang and Wang~\cite{SheTanWan11}, Weideman and Herbst~\cite{WeiHer86} and Yang~\cite{Yan10}, and also at \url{http://en.wikipedia.org/wiki/Split-step_method}. For those interested in a comparison of time stepping methods for the nonlinear Schr\"{o}dinger equation, see Klein~\cite{Kle08}. To describe the basic idea of the method, we consider an example given in Holden et al.~\cite{HolKarRisTao11}, which is the ordinary differential equation,
+\begin{equation}\label{eq:SplitOde}
+u_t=u(u-1),\quad u(t=0)=0.8.
+\end{equation}
+We can solve this equation relatively simply by separation of variables to find that
+\begin{equation}
+u(t)=\frac{4}{4+\exp(t)}.
+\end{equation}
+Now, an interesting observation is that we can also solve the equations $u_t=u^2$ and $u_t=-u$ individually. For the first we get that $u(t)=\frac{u(0)}{1-tu(0)}$ and for the second we get that $u(t)=u(0)\exp(-t)$. The principle behind splitting is to solve these two separate equations alternately for short periods of time. We will describe Strang splitting, although there are other forms of splitting, such as Godunov splitting and also additive splittings.  We will not describe these here, but refer you to the previously mentioned references, in particular Holden et al.~\cite{HolKarLieRis10}. To understand how we can solve the differential equation using splitting, consider the linear ordinary differential equation
+\begin{equation}
+u_t=u+2u,\quad u(0)=1.
+\end{equation}
+We can first solve $p_t=p$ for a time $\delta t/2$ and then using $q(0)=p(\delta t/2)$, we solve $q_t=2q$ also for a time $\delta t$ to get $q(\delta t)$ and finally solve $r_t=r$ for a time $\delta t/2$ with initial data $r(0)=q(\delta t)$. Thus in this case $p(\delta t)=\exp(\delta t/2)$, $q(\delta t)=p(\delta t/2)\exp(2\delta t)=\exp(5\delta t/2)$ and $u(\delta t)\approx r(\delta t/2)=q(\delta t)\exp(\delta t/2)=\exp(3\delta t)$, which in this case is the exact solution. One can perform a similar splitting for matrix differential equations. Consider solving $\bm u_t = (\bm A + \bm B)\bm u$, where $\bm A$ and $\bm B$ are $n\times n$ matrices, the exact solution is $\bm u=\exp\left((\bm A + \bm B) t\right)\bm u(t=0)$, and an approximate solution produced after one time step of splitting is $u(\delta t)\approx u(0)\exp(\bm A \delta t)\exp(\bm B \delta t)$, which is not in general equal to $u(t=0)\exp\left((\bm A + \bm B) \delta t\right)$ unless the matrices $\bm A$ and $\bm B$ commute\footnote{That is$\bm A\bm B=\bm B\bm A$.}, and so the error in doing splitting in this case is of the form $(\bm A \bm B - \bm B \bm A)\delta t$\footnote{One can derive this by using the series expansion of the exponential function, $\exp(\bm A t)=\sum_{n=0}^{\infty}\frac{(\bm A t)^n}{n!}$, and subtracting $\exp((\bm A+\bm B)\delta t)$ from $\exp(\bm A \delta t)\exp(\bm B \delta t).$}. Listing \ref{lst:OdeStrangMatlab} uses Matlab to demonstrate how to do splitting for eq.\ \eqref{eq:SplitOde}.
+
+\lstinputlisting[style=matlab_style,label=lst:OdeStrangMatlab,caption={A Matlab program which uses Strang splitting to solve an ODE.}]{./CubicNonlinearSchrodinger/Programs/ODEsplittingStrang.m}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Exercises}
+
+\begin{enumerate}
+\item[1)] Modify the Matlab code to calculate the error at time 1 for several different choices of timestep. Numerically verify that Strang splitting is second order accurate.
+\item[2)] Modify the Matlab code to use Godunov splitting where one solves $u1_t=u1$ for a time $\delta t$ and then using $u1(\delta t)$ as initial data solves $u2_t=2u2$ also for a time $\delta t$ to get the approximation to $u(\delta t)$. Calculate the error at time 1 for several different choices of timestep. Numerically verify that Godunov splitting is first order accurate.
+\end{enumerate}
+%%%%%%%
+%Section
+%%%%%%%
+\section{Serial}
+
+For the nonlinear Schr\"{o}dinger equation
+\begin{equation}
+i\psi_t\pm\lvert\psi\rvert^2\psi+\Delta\psi=0, \label{eq:NLS}
+\end{equation}
+we first solve
+\begin{equation}
+i\psi_t+\Delta\psi=0 \label{eq:NLSsplit1}
+\end{equation}
+exactly using the Fourier transform to get $\psi(\delta{t}/2,\cdot)$. We then solve
+\begin{equation}
+i\psi_t\pm\lvert\psi\rvert^2\psi=0  \label{eq:NLSsplit2}
+\end{equation}
+with $\psi(\delta{t}/2,\cdot)$ as initial data for a time step of $\delta t$. As explained by Klein~\cite{Kle08} and Thalhammer~\cite{Tha08}, this can be solved exactly in real space because in eq.\ \eqref{eq:NLSsplit2}, $\lvert \psi \rvert^2$ is a conserved quantity at every point in space and time. To show this, let $\psi^*$ denote the complex conjugate of $\psi$, so that
+\begin{align}
+\frac{\mathrm{d}\lvert \psi \rvert^2}{\mathrm{d}t} &{} = \psi^*\frac{\mathrm{d}\psi}{\mathrm{d}t} +\frac{\mathrm{d}\psi^*}{\mathrm{d}t}\psi = \psi^*\left(\pm i\lvert\psi\rvert^2\psi\right)+\left(\pm i\lvert\psi\rvert^2\psi\right)^*\psi = 0.
+\end{align}
+Another half step using eq.\ \eqref{eq:NLSsplit1} is then computed using the solution produced by solving eq.\ \eqref{eq:NLSsplit2} to obtain the approximate solution at time $\delta t$.  Example Matlab codes demonstrating splitting follow.
+
+\subsection{Example Matlab Programs for the Nonlinear Schr\"{o}dinger Equation}
+
+The program in listing \ref{lst:NlsSplit1DMatlab} computes an approximation to an explicitly known exact solution to the focusing nonlinear Schr\"{o}dinger equation.   
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit1DMatlab,caption={A Matlab program which uses Strang splitting to solve the one dimensional nonlinear Schr\"{o}dinger equation.}]{./CubicNonlinearSchrodinger/Programs/NLSsplitting1D.m}
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit2DMatlab,caption={A Matlab program which uses Strang splitting to solve the two dimensional nonlinear Schr\"{o}dinger equation.}]{./CubicNonlinearSchrodinger/Programs/NLSsplitting2D.m}
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit3DMatlab,caption={A Matlab program which uses Strang splitting to solve the three dimensional nonlinear Schr\"{o}dinger equation.}]{./CubicNonlinearSchrodinger/Programs/NLSsplitting3D.m}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Example One-Dimensional Fortran Program for the Nonlinear Schr\"{o}dinger Equation}
+
+Before considering parallel programs, we need to understand how to write a Fortran code for the one-dimensional nonlinear Schr\"{o}dinger equation. Below is an example Fortran program followed by a Matlab plotting script to visualize the results. In compiling the Fortran program a standard Fortran compiler and the FFTW library are required. Since the commands required for this are similar to those in the makefile for the heat equation, we do not include them here.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For1dNLS,caption={A Fortran program to solve the 1D nonlinear Schr\"{o}dinger equation using splitting.}]{./CubicNonlinearSchrodinger/Programs/NLS1dFortran/NLSsplitting.f90}
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit1DMatlabPlot,caption={A Matlab program which plots a numerical solution to a 1D nonlinear Schr\"{o}dinger equation generated by listing \ref{lst:For1dNLS}.}]{./CubicNonlinearSchrodinger/Programs/NLS1dFortran/plotcreate.m}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Shared Memory Parallel: OpenMP}
+
+We recall that OpenMP is a set of compiler directives that can allow one to easily make a Fortran, C or C++ program run on a shared memory machine -- that is a computer for which all compute processes can access the same globally addressed memory space. It allows for easy parallelization of serial programs which have already been written in one of the aforementioned languages.
+
+We will demonstrate one form of parallelizm for the two dimensional nonlinear Schr\"{o}dinger equation in which we will parallelize the loops using OpenMP commands, but will use the threaded FFTW library to parallelize the transforms for us. The example programs are in listing \ref{lst:For2dNlsOmp1},   A second method to parallelize the loops and Fast Fourier transforms explicitly using OpenMP commands is outlined in the exercises.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNlsOmp1,caption={An OpenMP Fortran program to solve the 2D nonlinear Schr\"{o}dinger equation using splitting and threaded FFTW.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortranThreadFFT/NLSsplitting.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:Makefile2dNLSomp2,caption={An example makefile for compiling the OpenMP program in listing \ref{lst:For2dNlsOmp1}. The example assumes one is using Flux and has loaded environments for the GCC compiler as well as the GCC compiled version of FFTW.  To use the Intel compiler to with this code, the OMP stack size needs to be explicitly set to be large enough.  If one is using the the PGI compilers instead of the GCC compilers, change the flag $-fopenmp$ to $-mp$.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortranThreadFFT/makefile}
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit2DMatlabPlot,caption={A Matlab program which plots a numerical solution to a 2D nonlinear Schr\"{o}dinger equation generated by listing \ref{lst:For2dNlsOmp1} or \ref{lst:For2dNlsOmp2}.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortran/plotcreate.m}
+
+\lstinputlisting[style=bash_style,language=bash,label=lst:Fluxsub2dNLSomp,caption={An example submission script for use on Flux. Change \texttt{your\_username} appropriately.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortran/fluxsubscript}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Exercises}
+\begin{enumerate}
+\item[1)] Download the example Matlab programs which accompany the pre-print by Klein, Muite and Roidot~\cite{KleMuiRoi11}. Examine how the mass and energy for these Schr\"{o}dinger like equations are computed. Add code to check conservation of mass and energy to the Matlab programs for the nonlinear Schr\"{o}dinger equation.
+\item[2)] The Gross-Pitaevskii equation\footnote{\url{http://en.wikipedia.org/wiki/Gross\%E2\%80\%93Pitaevskii\_equation}}  is given by
+\begin{equation}
+i\psi_t+\lvert\psi\rvert^2\psi +V(\bm x)\psi=0
+\end{equation}
+where we will take
+\begin{equation}
+V(\bm x)=\lVert \bm x \rVert^2_{l^2}=\sum_{k=1}^Nx_k^2
+\end{equation}
+in which $N$ is the space dimension. Show that this equation can be solved by splitting it into
+\begin{equation}
+i\psi_t+\Delta\psi=0 \label{eq:GPsplit1}
+\end{equation}
+and
+\begin{equation}
+i\psi_t+\lvert\psi\rvert^2\psi+V(\bm x)\psi=0.  \label{eq:GPsplit2}
+\end{equation}
+Be sure to explain how eqs.\ \eqref{eq:GPsplit1},\eqref{eq:GPsplit2} are solved. 
+\item[3)] Modify the Matlab codes to solve the Gross-Pitaevskii equation in one, two and three dimensions.
+\item[4)] Modify the serial Fortran codes to solve the Gross-Pitaevskii equation in one, two and three dimensions.
+\item[5)] Listings \ref{lst:For2dNlsOmp2} and \ref{lst:Makefile2dNLSomp2} give an alternate method of parallelizing an OpenMP program. Make the program in listing \ref{lst:For2dNlsOmp1} as efficient as possible and as similar to that in \ref{lst:For2dNlsOmp2}, but without changing the parallelization strategy. Compare the speed of the two different programs. Try to vary the number of grid points and cores used. Which code is faster on your system? Why do you think this is?
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNlsOmp2,caption={An OpenMP Fortran program to solve the 2D nonlinear Schr\"{o}dinger equation using splitting.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortran/NLSsplitting.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:Makefile2dNLSomp2,caption={An example makefile for compiling the OpenMP program in listing \ref{lst:For2dNlsOmp2}.  The example assumes one is using Flux and has loaded environments for the intel compiler as well as the Intel compiled version of FFTW.  If one is using the freely available GCC compilers instead of the Intel compilers, change the flag $-openmp$ to $-fopenmp$.}]{./CubicNonlinearSchrodinger/Programs/NLS2dFortran/makefile}
+
+\item[6)] Modify the OpenMP Fortran codes to solve the Gross-Pitaevskii equation in two and three dimensions.
+\item[7)] \footnote{This question is due to a project by Joshua Kirschenheiter.} Some quantum hydrodynamic models for plasmas are very similar to the nonlinear Schr\"{o}dinger equation and can also be numerically approximated using splitting methods.  A model for a plasma used by Eliasson and Shukla~\cite{EliShu09} is
+$$i\Psi_t+\Delta \Psi + \phi\Psi - \lvert \Psi \rvert^{4/D}\Psi=0$$
+and 
+$$ \Delta \phi =\lvert \Psi \rvert^2-1,$$
+where $\Psi$ is the, $\phi$ the and $D$ the dimension, typically 1,2 or 3. This equation can be solved in a similar manner to the Davey-Stewartson equations in Klein, Muite and Roidot~\cite{KleMuiRoi11}. Specifically, first solve
+$$i\Psi_t+\Delta \Psi=0$$
+using the Fourier transform so that
+$$\Psi(\delta t)=\exp\left(-i\Delta^2 \delta t\right)\Psi(0)$$
+Then solve
+$$\phi=\Delta^{-1}\left(\lvert \Psi \rvert^2-1\right)$$
+using the Fourier transform.  Finally, solve
+$$i\Psi_t+ \phi\Psi - \lvert \Psi \rvert^{4/D}\Psi=0$$
+using the fact that at each grid point $\phi\Psi - \lvert \Psi \rvert^{4/D}$ is a constant, so the solution is
+$$\Psi=\exp\left[ i\left(\phi-\lvert \Phi \rvert^{4/D}\right)\delta t\right].$$
+\item[8)] \footnote{This question is due to a project by Kohei Harada and Matt Warnez.}The operator splitting method can be used for equations other than the nonlinear Schr\"{o}dinger equation. Another equation for which operator splitting can be used is the complex Ginzburg-Landau equation
+$$\frac{\partial A}{\partial t}=A+(1+i\alpha)\Delta A- (1+i\beta)|A|^2A,$$
+where $A$ is a complex function, typically of one, two or three variables. An example one dimensional code is provided in listing \ref{lst:Nls16thOrderMatlab}, based on an earlier finite difference code by Blanes, Casa, Chartier and Miura, using the methods described in Blanes et al.~\cite{BlaCasChaMur12}. By using complex coefficients,  Blanes et al.~\cite{BlaCasChaMur12} can create high order splitting methods for parabolic equations. Previous attempts to do this have failed since if only real coefficients are used, a backward step which is required for methods higher than second order leads to numerical instability. Modify the example code to solve the complex Ginzburg-Landau equation in one, two and then in three spatial dimensions. The linear part
+$$\frac{\partial A}{\partial t}=A+(1+i\alpha)\Delta A$$
+can be solved explicitly using the Fourier transform. To solve the nonlinear part, 
+$$\frac{\partial A}{\partial t}=- (1+i\beta)|A|^2A$$
+consider
+$$\frac{\partial |A|^2}{\partial t}=\frac{\partial A}{\partial t}A^*+\frac{\partial A^*}{\partial t}A=2|A|^4$$
+and solve this exactly for $|A|^2$. To recover the phase, observe that
+$$\frac{\partial \log(A)}{\partial t}=- (1+i\beta)|A|^2$$
+which can also be integrated explicitly since $|A|^2(t)$ is known.
+
+\lstinputlisting[style=matlab_style,label=lst:Nls16thOrderMatlab,caption={A Matlab program which uses 16th order splitting to solve the cubic nonlinear Schr\"{o}dinger equation.}]{./CubicNonlinearSchrodinger/Programs/NLSsplitting1d16Order.m}
+\end{enumerate}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Distributed Memory Parallel: MPI}
+
+For this section, we will use the library 2DECOMP{\&}FFT available from \url{http://www.2decomp.org/index.html}. The website includes some examples which indicate how this library should be used, in particular the sample code at \url{http://www.2decomp.org/case_study1.html} is a very helpful indication of how one converts a code that uses FFTW to one that uses MPI and the aforementioned library.  
+
+Before creating a parallel MPI code using 2DECOMP{\&}FFT, we will generate  a serial Fortran code that uses splitting to solve the 3D nonlinear Schr\"{o}dinger equation. Rather than using loop-based parallelization to do a sequence of one dimensional fast Fourier transforms, we will use FFTW's three dimensional FFT, so that the serial version and MPI parallel version have the same structure. The serial version is in listing \ref{lst:For3dNls}. This file can be compiled in a similar manner to that in \ref{lst:MakefileHeat}.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dNls,caption={A Fortran program to solve the 3D nonlinear Schr\"{o}dinger equation using splitting and FFTW.}]{./CubicNonlinearSchrodinger/Programs/NLS3dFortran/NLSsplitting.f90}
+
+In comparison to the previous programs, the program in listing \ref{lst:For3dNls} writes out its final data as a binary file. This is often significantly faster than writing out a text file, and the resulting file is usually much smaller in size. This is important when many such files are written and/or if individual files are large. Due to the formatting change, the binary file also needs to be read in slightly differently. The Matlab script in listing \ref{lst:NlsSplit3DMatlabPlot} shows how to do this.
+
+\lstinputlisting[style=matlab_style,label=lst:NlsSplit3DMatlabPlot,caption={A Matlab program which plots a numerical solution to a 3D nonlinear Schr\"{o}dinger equation generated by listings \ref{lst:For3dNls} or \ref{lst:For3dNlsMPI}.}]{./CubicNonlinearSchrodinger/Programs/NLS3dFortran/plotcreate.m}
+
+We now modify the above code to use MPI and the library 2DECOMP{\&}FFT.  The library 2DECOMP{\&}FFT hides most of the details of MPI although there are a few commands which it is useful for the user to understand. These commands are:
+\begin{itemize}
+\item \texttt{USE mpi} or \texttt{INCLUDE 'mpif.h'} 
+\item \texttt{MPI\_INIT}
+\item \texttt{MPI\_COMM\_SIZE}
+\item \texttt{MPI\_COMM\_RANK}
+\item \texttt{MPI\_FINALIZE}
+\end{itemize}
+
+The program is listed in listing \ref{lst:For3dNlsMPI}, please compare this to the serial code in \ref{lst:For3dNls}. The library 2DECOMP{\&}FFT does a domain decomposition of the arrays so that separate parts of the arrays are on separate processors.  The library can also perform a Fourier transform on the arrays even though they are stored on different processors -- the library does all the necessary message passing and transpositions required to perform the Fourier transform. It should be noted that the order of the entries in the arrays after the Fourier transform is not necessarily the same as the order used by FFTW. However, the correct ordering of the entries is returned by the structure \texttt{decomp} and so this structure is used to obtain starting and stopping entries for the loops. We assume that the library 2DECOMP{\&}FFT has been installed in an appropriate location. 
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dNlsMPI,caption={A Fortran program to solve the 3D nonlinear Schr\"{o}dinger equation using splitting and 2DECOMP{\&}FFT.}]{./CubicNonlinearSchrodinger/Programs/NLS3dFortranMPI/NLSsplitting.f90}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Exercises}
+
+\begin{enumerate}
+\item[1)] Write an MPI  code using 2DECOMP{\&}FFT to solve the Gross-Pitaevskii equation in three dimensions.
+\item[2)] Learn to use either VisIt (\url{https://wci.llnl.gov/codes/visit/}) or Paraview (\url{http://www.paraview.org/}) and write a script to visualize two and three dimensional output in a manner that is similar to the Matlab codes.
+\end{enumerate}
+

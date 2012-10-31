@@ -1,0 +1,25 @@
+	# All settings here for use on intrepid, a cluster at Argone
+	# Center for Advanced Computing (CAC), using blue gene p hardware, 
+
+	COMPILER =  mpixlf90_r
+	decompdir=../2decomp_fft
+	# compilation settings, optimization, precision, parallelization
+	FLAGS =  -O3 -qstrict  
+	LIBS = -L/soft/apps/ESSL-4.4/lib -lesslbg		
+	
+	DECOMPLIB = -I${decompdir}/include -L${decompdir}/lib -l2decomp_fft
+
+
+# libraries
+# source list for main program
+SOURCES = KgSemiImp3d.f90 initialdata.f90 savedata.f90 getgrid.f90 \
+			storeold.f90 saveresults.f90 enercalc.f90 readinputfile.f90
+
+Kg: $(SOURCES)
+		${COMPILER} -o Kg $(FLAGS) $(SOURCES) $(DECOMPLIB) $(LIBS)
+
+
+clean:
+	rm -f *.o
+clobber:	
+	rm -f Kg

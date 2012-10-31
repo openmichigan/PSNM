@@ -1,0 +1,499 @@
+	!--------------------------------------------------------------------
+	!
+	! PURPOSE
+	!
+	! This program solves nonlinear Schrodinger equation in 2 dimensions
+	! i*u_t+Es*|u|^2u+u_{xx}+u_{yy}=0
+	! using a second order time spectral splitting scheme
+	!
+	! The boundary conditions are u(x=0,y)=u(x=2*L*\pi,y) 
+	! and u(x,y=0)=u(x,y=2*L*\pi)
+	! The initial condition is u=exp(-x^2-y^2)
+	!
+	! AUTHORS
+	!
+	! B. Cloutier, B.K. Muite, P. Rigge
+	! 4 June 2012
+	!
+	! .. Parameters ..
+	!  Nx				= number of modes in x - power of 2 for FFT
+	!  Ny				= number of modes in y - power of 2 for FFT
+	!  Nt				= number of timesteps to take
+	!  Tmax				= maximum simulation time
+	!  plotgap			= number of timesteps between plots
+	!  pi = 3.14159265358979323846264338327950288419716939937510d0
+	!  L				= width of box 
+	!  ES				= +1 for focusing and -1 for defocusing
+	! .. Scalars ..
+	!  i				= loop counter in x direction
+	!  j				= loop counter in y direction
+	!  n				= loop counter for timesteps direction	
+	!  allocatestatus	= error indicator during allocation
+	!  start			= variable to record start time of program
+	!  finish			= variable to record end time of program
+	!  count_rate		= variable for clock count rate
+	!  plan				= fft plan
+	!  dt				= timestep
+	!  InMass			= initial mass
+	!  FiMass			= final mass
+	!  InEner			= initial energy
+	!  FiEner			= final energy
+	! .. Arrays ..
+	!  u				= approximate solution
+	!  v				= Fourier transform of approximate solution
+	!  u_d				= approximate solution on device
+	!  v_d				= Fourier transform of approximate solution on device
+	!  temp1_d			= temporary array used to find mass and energy
+	!  temp2_d			= temporary array used to find mass and energy
+	! .. Vectors ..
+	!  kx				= fourier frequencies in x direction
+	!  ky				= fourier frequencies in y direction
+	!  x				= x locations
+	!  y				= y locations
+	!  time				= times at which save data
+	!  name_config		= array to store filename for data to be saved
+	!    		
+	! REFERENCES
+	!
+	! ACKNOWLEDGEMENTS
+	!
+	! This program is based on example code to demonstrate usage of Fortran and 
+	! CUDA FFT routines taken from 
+	! http://cudamusing.blogspot.com/2010/05/calling-cufft-from-cuda-fortran.html
+	! 
+	! and
+	!
+	! http://cudamusing.blogspot.com/search?q=cublas
+	!
+	! ACCURACY
+	!		
+	! ERROR INDICATORS AND WARNINGS
+	!
+	! FURTHER COMMENTS
+	! Check that the initial iterate is consistent with the 
+	! boundary conditions for the domain specified
+	!--------------------------------------------------------------------
+	! External routines required
+	! 
+	! External libraries required
+	! cufft	 -- Cuda FFT library
+	!
+
+	!
+	! Define the INTERFACE to the NVIDIA CUFFT routines
+	!
+
+	module precision
+	! Precision control
+
+	integer, parameter, public :: Single = kind(0.0) ! Single precision
+	integer, parameter, public :: Double = kind(0.0d0) ! Double precision
+
+	integer, parameter, public :: fp_kind = Double
+	!integer, parameter, public :: fp_kind = Single
+
+	end module precision
+
+	module cufft
+
+	integer, public :: CUFFT_FORWARD = -1
+	integer, public :: CUFFT_INVERSE = 1
+	integer, public :: CUFFT_R2C = Z'2a' ! Real to Complex (interleaved)
+	integer, public :: CUFFT_C2R = Z'2c' ! Complex (interleaved) to Real
+	integer, public :: CUFFT_C2C = Z'29' ! Complex to Complex, interleaved
+	integer, public :: CUFFT_D2Z = Z'6a' ! Double to Double-Complex
+	integer, public :: CUFFT_Z2D = Z'6c' ! Double-Complex to Double
+	integer, public :: CUFFT_Z2Z = Z'69' ! Double-Complex to Double-Complex
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!
+	! cufftPlan2d(cufftHandle *plan, int nx,int ny, cufftType type)
+	!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	interface cufftPlan2d
+	subroutine cufftPlan2d(plan, nx, ny, type) bind(C,name='cufftPlan2d')
+	use iso_c_binding
+	integer(c_int):: plan
+	integer(c_int),value:: nx, ny, type
+	end subroutine cufftPlan2d
+	end interface cufftPlan2d
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!
+	! cufftDestroy(cufftHandle plan)
+	!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	interface cufftDestroy
+	subroutine cufftDestroy(plan) bind(C,name='cufftDestroy')
+	use iso_c_binding
+	integer(c_int),value:: plan
+	end subroutine cufftDestroy
+	end interface cufftDestroy
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	!
+	! cufftExecZ2Z(cufftHandle plan,
+	! cufftDoubleComplex *idata,
+	! cufftDoubleComplex *odata,
+	! int direction;
+	!
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	interface cufftExecZ2Z
+	subroutine cufftExecZ2Z(plan, idata, odata, direction) &
+	& bind(C,name='cufftExecZ2Z')
+	use iso_c_binding
+	use precision
+	integer(c_int),value:: direction
+	integer(c_int),value:: plan
+	complex(fp_kind),device,dimension(1:nx,1:ny):: idata,odata
+	end subroutine cufftExecZ2Z
+	end interface cufftExecZ2Z
+
+	end module cufft
+
+	PROGRAM main
+	use precision
+	use cufft
+	! Declare host variables and scalars	
+	IMPLICIT NONE
+	INTEGER(kind=4), PARAMETER 						:: Nx=1024
+	INTEGER(kind=4), PARAMETER 						:: Ny=1024		
+	INTEGER(kind=4), PARAMETER						:: Nt=20
+	INTEGER(kind=4), PARAMETER						:: plotgap=5			 
+	REAL(fp_kind), PARAMETER		&
+		::  pi=3.14159265358979323846264338327950288419716939937510d0
+	REAL(fp_kind), PARAMETER						:: Lx=5.0d0 
+	REAL(fp_kind), PARAMETER						:: Ly=5.0d0	 
+	REAL(fp_kind), PARAMETER						:: Es=1.0d0	
+	REAL(fp_kind)									:: dt=0.10d0**5	
+	REAL(fp_kind)									:: scalemodes 
+	COMPLEX(fp_kind)								:: InMass,FiMass,InEner,FiEner 
+	REAL(fp_kind),  DIMENSION(:), ALLOCATABLE		:: x,y	
+	COMPLEX(fp_kind),  DIMENSION(:,:), ALLOCATABLE	:: u	
+	REAL(fp_kind), DIMENSION(:), ALLOCATABLE		:: time
+	INTEGER(kind=4)	:: i,j,k,n,modes,AllocateStatus,plan, kersize
+	INTEGER(kind=4)	:: start, finish, count_rate
+  	CHARACTER*100	:: name_config
+	! Declare variables for GPU
+	COMPLEX(fp_kind), DEVICE, DIMENSION(:), ALLOCATABLE	:: kx_d,ky_d		
+	REAL(fp_kind), DEVICE, DIMENSION(:), ALLOCATABLE	:: x_d,y_d	
+	COMPLEX(fp_kind), DEVICE, DIMENSION(:,:), ALLOCATABLE	:: u_d,v_d,temp1_d,temp2_d	
+	REAL(fp_kind),DEVICE,DIMENSION(:), ALLOCATABLE		:: time_d
+	
+	! start timing
+	PRINT *,'Program starting'
+	PRINT *,'Grid: ',Nx,'X',Ny	
+    ! allocate arrays on the host
+	ALLOCATE(x(1:Nx),y(1:Ny),u(1:Nx,1:Ny),time(1:Nt+1),&
+		stat=AllocateStatus)
+	IF (allocatestatus .ne. 0) STOP		
+	PRINT *,'Allocated CPU arrays'
+
+	! allocate arrays on the device
+	ALLOCATE(kx_d(1:Nx),ky_d(1:Nx),x_d(1:Nx),y_d(1:Nx),&
+			u_d(1:Nx,1:Ny),v_d(1:Nx,1:Ny),time_d(1:Nt+1),&
+			temp1_d(1:Nx,1:Ny),temp2_d(1:Nx,1:Ny),stat=AllocateStatus)
+	IF (allocatestatus .ne. 0) STOP		
+	PRINT *,'Allocated GPU arrays'
+	
+	kersize=min(Nx,256)
+	! set up ffts
+	CALL cufftPlan2D(plan,nx,ny,CUFFT_Z2Z)
+	PRINT *,'Setup FFTs'
+		! setup fourier frequencies
+	!$cuf kernel do <<< *, * >>>	
+	DO i=1,1+Nx/2
+		kx_d(i)= cmplx(0.0d0,1.0d0)*(i-1.0d0)/Lx  			
+	END DO
+	kx_d(1+Nx/2)=0.0d0
+	!$cuf kernel do <<< *, * >>>
+	DO i = 1,Nx/2 -1
+		kx_d(i+1+Nx/2)=-kx_d(1-i+Nx/2)
+	END DO
+	!$cuf kernel do <<< *, * >>>
+	DO i=1,Nx
+		x_d(i)=(-1.0d0 + 2.0d0*REAL(i-1,kind(0d0))/REAL(Nx,kind=fp_kind))*pi*Lx
+	END DO
+	!$cuf kernel do <<< *, * >>>	
+	DO j=1,1+Ny/2
+		ky_d(j)= cmplx(0.0d0,1.0d0)*(j-1.0d0)/Ly  			
+	END DO
+	ky_d(1+Ny/2)=0.0d0
+	!$cuf kernel do <<< *, * >>>
+	DO j = 1,Ny/2 -1
+		ky_d(j+1+Ny/2)=-ky_d(1-j+Ny/2)
+	END DO
+	!$cuf kernel do <<< *, * >>>
+	DO j=1,Ny
+		y_d(j)=(-1.0d0 + 2.0d0*REAL(j-1,kind(0d0))/REAL(Ny,kind=fp_kind))*pi*Ly
+	END DO
+	scalemodes=1.0d0/REAL(Nx*Ny,kind=fp_kind)
+	PRINT *,'Setup grid and fourier frequencies'
+
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			u_d(i,j)=exp(-1.0d0*(x_d(i)**2+y_d(j)**2))
+		END DO 
+	END DO	
+	! transform initial data 
+	CALL cufftExecZ2Z(plan,u_d,v_d,CUFFT_FORWARD)
+	
+	PRINT *,'Got initial data'
+	! get initial mass
+	!$cuf kernel do <<<  *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp1_d(i,j)=abs(u_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to get initial mass
+	CALL cufftExecZ2Z(plan,temp1_d,temp2_d,CUFFT_FORWARD)
+	InMass=temp2_d(1,1)
+	! Get initial energy
+	!$cuf kernel do <<<  *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp1_d(i,j)=-ES*0.25d0*abs(u_d(i,j))**4
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp1_d,temp2_d,CUFFT_FORWARD)
+	InEner=temp2_d(1,1)
+	!$cuf kernel do <<< *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=kx_d(i)*v_d(i,j)*scalemodes
+		END DO 
+	END DO
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_INVERSE)
+	!$cuf kernel do <<< *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=0.5d0*abs(temp1_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_FORWARD)
+	InEner=InEner+temp1_d(1,1)
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=ky_d(j)*v_d(i,j)*scalemodes
+		END DO 
+	END DO
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_INVERSE)
+	!$cuf kernel do <<< *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=0.5d0*abs(temp1_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_FORWARD)
+	InEner=InEner+temp1_d(1,1)
+
+	! start timing
+	CALL system_clock(start,count_rate)
+	! Do first half time step
+	CALL cufftExecZ2Z(plan,u_d,v_d,CUFFT_FORWARD)
+	!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+	DO j=1,Ny
+		DO i=1,Nx
+		    v_d(i,j)=exp(dt*( kx_d(i)*kx_d(i) + ky_d(j)*ky_d(j) )&
+					*cmplx(0.0d0,0.50d0) )*v_d(i,j)
+		END DO
+	END DO
+	
+	PRINT *,'Starting timestepping'
+	time(1)=0.0d0
+	DO n=1,Nt
+		time_d(n+1)=n*dt
+		CALL cufftExecZ2Z(plan,v_d,u_d,CUFFT_INVERSE)
+		!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+		DO j=1,Ny
+			DO i=1,Nx
+				v_d(i,j)=Es*u_d(i,j)*conjg(u_d(i,j))*scalemodes**2	
+			END DO
+		END DO
+		!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+		DO j=1,Ny
+			DO i=1,Nx
+				u_d(i,j)=exp(cmplx(0.0d0,-1.0d0)*dt*v_d(i,j))&
+						*u_d(i,j)*scalemodes	
+			END DO
+		END DO
+
+		CALL cufftExecZ2Z(plan,u_d,v_d,CUFFT_FORWARD)
+		!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+		DO j=1,Ny
+			DO i=1,Nx
+				v_d(i,j)=exp(dt*(kx_d(i)*kx_d(i) + ky_d(j)*ky_d(j))&
+					*cmplx(0.0d0,1.0d0))*v_d(i,j)	
+			END DO
+		END DO
+		
+	END DO
+
+	! transform back final data and do another half time step
+
+	CALL cufftExecZ2Z(plan,v_d,u_d,CUFFT_INVERSE)
+	!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			v_d(i,j)=Es*u_d(i,j)*conjg(u_d(i,j))*scalemodes**2	
+		END DO
+	END DO
+	!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			u_d(i,j)=exp(cmplx(0.0d0,-1.0d0)*dt*v_d(i,j))&
+					*u_d(i,j)*scalemodes	
+		END DO
+	END DO
+
+	CALL cufftExecZ2Z(plan,u_d,v_d,CUFFT_FORWARD)
+	!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			v_d(i,j)=exp(dt*(kx_d(i)*kx_d(i) + ky_d(j)*ky_d(j))&
+					*cmplx(0.0d0,0.50d0))*v_d(i,j)	
+		END DO
+	END DO
+	CALL cufftExecZ2Z(plan,v_d,u_d,CUFFT_INVERSE)
+	! normalize
+	!$cuf kernel do(2) <<< (1,*),(kersize,1) >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			u_d(i,j)=u_d(i,j)*scalemodes	
+		END DO
+	END DO
+
+	CALL system_clock(finish,count_rate)
+	PRINT*,'Program took ',&
+		REAL(finish-start,kind(0d0))/REAL(count_rate,kind(0d0)),'s for execution'
+
+	PRINT *,'Finished time stepping'
+
+	! calculate final mass
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp1_d(i,j)=abs(u_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to get initial mass
+	CALL cufftExecZ2Z(plan,temp1_d,temp2_d,CUFFT_FORWARD)
+	FiMass=temp2_d(1,1)
+
+	PRINT*,'Initial mass',InMass
+	PRINT*,'Final mass',FiMass
+	PRINT*,'Final Mass/Initial Mass', &
+	   ABS(REAL(FiMass,kind=fp_kind)/REAL(InMass,kind=fp_kind))
+
+
+	! Get final energy
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp1_d(i,j)=-ES*0.25d0*abs(u_d(i,j))**4
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp1_d,temp2_d,CUFFT_FORWARD)
+	FiEner=temp2_d(1,1)
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=kx_d(i)*v_d(i,j)*scalemodes
+		END DO 
+	END DO
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_INVERSE)
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=0.5d0*abs(temp1_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_FORWARD)
+	FiEner=FiEner+temp1_d(1,1)
+	!$cuf kernel do <<< *,* >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=ky_d(j)*v_d(i,j)*scalemodes
+		END DO 
+	END DO
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_INVERSE)
+	!$cuf kernel do <<<  *,*  >>>
+	DO j=1,Ny
+		DO i=1,Nx
+			temp2_d(i,j)=0.5d0*abs(temp1_d(i,j))**2
+		END DO 
+	END DO
+	! Use FFT to find mean
+	CALL cufftExecZ2Z(plan,temp2_d,temp1_d,CUFFT_FORWARD)
+	FiEner=FiEner+temp1_d(1,1)
+
+	PRINT*,'Initial energy',InEner
+	PRINT*,'Final energy',FiEner
+	PRINT*,'Final Energy/Initial Energy', &
+	   ABS(REAL(FiEner,kind=fp_kind)/REAL(InEner,kind=fp_kind))
+
+	! Copy results back to host
+	u=u_d
+	time=time_d
+	x=x_d
+	y=y_d
+
+	name_config = 'ufinal.dat' 
+	OPEN(unit=11,FILE=name_config,status="UNKNOWN") 	
+	REWIND(11)
+	DO j=1,Ny
+		DO i=1,Nx
+			WRITE(11,*) abs(u(i,j))**2
+		END DO
+	END DO
+	CLOSE(11)
+		
+	name_config = 'tdata.dat' 
+	OPEN(unit=11,FILE=name_config,status="UNKNOWN") 	
+	REWIND(11)
+	DO j=1,1+Nt/plotgap
+		WRITE(11,*) time(j)
+	END DO
+	CLOSE(11)
+
+	name_config = 'xcoord.dat' 
+	OPEN(unit=11,FILE=name_config,status="UNKNOWN") 	
+	REWIND(11)
+	DO i=1,Nx
+		WRITE(11,*) x(i)
+	END DO
+	CLOSE(11)
+
+	name_config = 'ycoord.dat' 
+	OPEN(unit=11,FILE=name_config,status="UNKNOWN") 	
+	REWIND(11)
+	DO j=1,Ny
+		WRITE(11,*) y(j)
+	END DO
+	CLOSE(11)
+	PRINT *,'Saved data'
+	
+	! Destroy the plan
+	CALL cufftDestroy(plan)
+
+	DEALLOCATE(kx_d,ky_d,x_d,y_d,&
+			u_d,v_d,time_d,&
+			temp1_d,temp2_d,&
+			stat=AllocateStatus)
+	IF (allocatestatus .ne. 0) STOP	
+	DEALLOCATE(x,y,u,time,&
+		stat=AllocateStatus)
+	IF (allocatestatus .ne. 0) STOP 
+	PRINT *,'deallocated memory'
+	PRINT *,'Program execution complete'
+	END PROGRAM main

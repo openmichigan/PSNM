@@ -1,0 +1,97 @@
+\documentclass[12pt]{report}
+\usepackage{bm,amsmath,amsthm,amssymb,graphicx,listings,hyperref}
+\usepackage{fullpage}
+\usepackage{ccicons,xmpincl}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{mcode}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+
+%% \setlength{\hoffset}{0cm}
+%% \setlength{\marginparwidth}{0cm}
+%% \setlength{\textwidth}{6.5in}
+
+\definecolor{lightpurple}{rgb}{0.8,0.8,1}
+\definecolor{gray}{rgb}{0.8,0.8,0.8}
+
+\lstset{
+  showstringspaces=false,
+  numbers=left,
+  stepnumber=1,
+  numbersep=5pt,
+  numberstyle=\tiny\color{black},
+  showtabs=false,
+  tabsize=2,
+  captionpos=t,
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  backgroundcolor=\color{white},
+  frame=lines,
+  rulesepcolor=\color{gray}
+}
+
+\lstdefinestyle{matlab_style}{
+  %% backgroundcolor=\color{gray}
+}
+
+\lstdefinestyle{fortran_style}{
+  %% backgroundcolor=\color{gray}
+}
+
+\lstdefinestyle{make_style}{
+  backgroundcolor=\color{gray}
+}
+
+\lstdefinestyle{bash_style}{
+  backgroundcolor=\color{gray}
+}
+
+\lstdefinestyle{python_style}{
+  %% backgroundcolor=\color{gray}
+}
+
+\title{Parallel Spectral Numerical Methods}
+\author{Gong Chen, Brandon Cloutier, Ning Li, Benson K. Muite and Paul Rigge \\ with contributions from\\ Sudarshan Balakrishnan, Andre Souza and Jeremy West}
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\newpage
+\phantomsection \label{listoffig}
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\newpage
+\phantomsection \label{listoflistings}
+\addcontentsline{toc}{chapter}{Program Listings}
+\lstlistoflistings
+
+\input{./License/License}
+\input{./Acknowledgements/Acknowledgements}
+\input{./Overview/Overview}
+\input{./FinitePrecisionArithmetic/FinitePrecisionArithmetic}
+\input{./SeparationOfVariables/SeparationOfVariables}
+\input{./MotivationForNumericalMethods/MotivationForNumericalMethods}
+\input{./Timestepping/Timestepping}
+\input{./1dDFT/1dDFT}
+\input{./FindingDerivatives/FindingDerivatives}
+\input{./ExamplesInMatlab/ExamplesInMatlab}
+\input{./NonlinearOdeAndIteration/NonlinearOdeAndIteration}
+\input{./FortranPrograms/FortranPrograms}
+\input{./IntroductionToParallelProgramming/IntroductionToParallelProgramming}
+\input{./CubicNonlinearSchrodinger/CubicNonlinearSchrodinger}
+\input{./NavierStokes/NavierStokes}
+\input{./KleinGordon/KleinGordon}
+\input{./bibliography/bibliography}
+\appendix
+\input{./SingleGPU/SingleGPU.tex}
+\input{./PythonPrograms/PythonPrograms}
+
+\end{document}

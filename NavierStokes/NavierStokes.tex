@@ -1,0 +1,200 @@
+\chapter{The Two- and Three-Dimensional Navier-Stokes Equations}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Background}
+The Navier-Stokes equations describe the motion of a fluid. In order to derive the Navier-Stokes equations we assume that a fluid is a continuum (not made of individual particles, but rather a continuous substance) and that mass and momentum are conserved. After making some assumptions and using Newton's second law on an incompressible fluid particle, the Navier-Stokes equations can be derived in their entirety. All details are omitted since there are many sources of this information, two sources that are particularly clear are Tritton~\cite{Tri88} and Doering and Gibbon~\cite{DoeGib95}; Gallavotti~\cite{Gal02} should also be noted for introducing both mathematical and physical aspects of these equations, and Uecker~\cite{Uec09} includes a quick derivation and some example Fourier Spectral Matlab codes. For a more detailed introduction to spectral methods for the Navier-Stokes equations see Canuto et al.~\cite{CHQZ07}. The incompressible Navier-Stokes equations  are
+\begin{eqnarray}
+\rho \left (\frac{\partial \mathbf{u}}{\partial t} + \mathbf{u} \cdot \nabla \mathbf{u} \right)&=&-\nabla p + \mu \Delta \mathbf{u} + \mathbf{f} \label{eq:NseConMom}\\
+\nabla \cdot \mathbf{u} &=& 0. \label{eq:NseConMas}
+\end{eqnarray}
+In these equations, $\rho$ is density, $\mathbf{u}(x,y,z)=(u,v,w)$ is the velocity with components in the $x$, $y$ and $z$ directions, $p$ is pressure field, $\mu$ is dynamic viscosity (constant in incompressible case) and $\mathbf{f}$ is a body force (force that acts through out the volume). Equation \eqref{eq:NseConMom} represents conservation of momentum and eq.\ \eqref{eq:NseConMas} is the continuity equation which represents conservation of mass for an incompressible fluid.  
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{The Two-Dimensional Case}
+
+We will first consider the two-dimensional case. A difficulty in simulating the incompressible Navier-Stokes equations is the numerical satisfaction of the incompressibility constraint in eq.\ \eqref{eq:NseConMas}, this is sometimes referred to as a divergence free condition or a solenoidal constraint. To automatically satisfy this incompressibility constraint in two dimensions, where
+$$\mathbf u(x,y)=\left(u(x,y),v(x,y)\right)$$
+it is possible to re-write the equations using a different formulation, the stream-function vorticity formulation. In this case, we let 
+$$u=\frac{\partial \psi}{\partial y}  \quad v=-\frac{\partial \psi}{\partial x},$$ 
+where $\psi(x,y)$ is the streamfunction.  Level curves of the streamfunction represent streamlines\footnote{A streamline is a continuous curve along which the instantaneous velocity is tangent, see Tritton~\cite{Tri88} for more on this.} of the fluid field. Note that 
+$$\nabla\cdot\mathbf u =\frac{\partial u}{\partial x}+\frac{\partial v}{\partial y}= \frac{\partial^2\psi}{\partial x \partial y} - \frac{\partial^2\psi}{\partial y \partial x}=0,$$
+so eq.\ \eqref{eq:NseConMas} is automatically satisfied. Making this change of variables, we obtain a single scalar partial differential equation by taking the curl of the momentum equation, eq.\ \eqref{eq:NseConMom}. We define the vorticity $\omega$, so that
+$$\omega=\nabla\times\mathbf u= \frac{\partial v}{\partial x}-\frac{\partial u}{\partial y}=-\Delta \psi$$
+and eq.\ \eqref{eq:NseConMom} becomes
+\begin{align*}
+&{}\hspace{2em}
+\frac{\partial }{\partial x} \left[\rho\left(\frac{\partial v}{\partial t} +u \frac{\partial v}{\partial x} +v\frac{\partial v}{\partial y}\right) \right]
+- \frac{\partial }{\partial y} \left[\rho\left(\frac{\partial u}{\partial t} +u \frac{\partial u}{\partial x} +v\frac{\partial u}{\partial y}\right) \right]
+\\&{}=\frac{\partial }{\partial x} \left[\mu\left(\frac{\partial^2 v}{\partial x^2} + \frac{\partial^2 v}{\partial y^2}\right) + fy \right]
+-\frac{\partial }{\partial y} \left[\mu\left(\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2}\right) + fx \right]
+\end{align*}
+where $fx$ and $fy$ represent the $x$ and $y$ components of the force $\mathbf f$. Since the flow is divergence free, 
+$$\frac{\partial u}{\partial x}=-\frac{\partial v}{\partial x}$$
+and so can simplify the nonlinear term to get
+\begin{align*}
+&{}\hspace{2em}\frac{\partial }{\partial x} \left[\left( u\frac{\partial v}{\partial x} +v\frac{\partial v}{\partial y}\right) \right]
+- \frac{\partial }{\partial y} \left[\left(u \frac{\partial u}{\partial x} +v\frac{\partial u}{\partial y}\right) \right]
+\\&{}=\frac{\partial u}{\partial x}\frac{\partial v}{\partial x}+u\frac{\partial^2 v}{\partial x^2 } +\frac{\partial v}{\partial x}\frac{\partial v}{\partial y} + v\frac{\partial^2v }{\partial x \partial y}
+-\frac{\partial u}{\partial y}\frac{\partial u}{\partial x} - u\frac{\partial^2u }{\partial x\partial y} -\frac{\partial v}{\partial y}\frac{\partial u}{\partial y} -v \frac{\partial^2u }{\partial y^2 }
+\\&{}= u\left( \frac{\partial^2 v}{\partial x^2 } - \frac{\partial^2u }{\partial x\partial y} \right) + v\left( \frac{\partial^2 v}{\partial x \partial y } - \frac{\partial^2u }{\partial^2 y} \right). 
+\end{align*}
+We finally obtain
+\begin{align} \label{eq:Ns2dStrVorA}
+&{}\hspace{1em}\rho\left(\frac{\partial \omega}{\partial t} + u\frac{\partial \omega}{\partial x} + v\frac{\partial \omega }{\partial y}\right)
+ =\mu\Delta\omega+\frac{\partial fy}{\partial x}- \frac{\partial fx}{\partial y} 
+ \end{align}
+and
+\begin{align} \label{eq:Ns2dStrVorB}
+&{}\Delta \psi = -\omega.
+\end{align}
+Note that in this formulation, the Navier-Stokes equation is like a forced heat equation for the vorticity with a nonlocal and nonlinear term. We can take advantage of this structure in finding numerical solutions by modifying our numerical programs which give approximate solutions to the heat equation.
+
+A simple time discretization for this equation is the Crank-Nicolson method, where the nonlinear terms are solved for using fixed point iteration. A tutorial on convergence of time discretization schemes for the Navier-Stokes equations can be found in Temam~\cite{Tem01}. The time discretized equations become
+\begin{align} \label{eq:Ns2dStrVorACn}
+&{}\hspace{2em}\rho\left[\frac{\omega^{n+1,k+1}-\omega^n}{\delta t} \right.
+\\&{}\left.+\frac{1}{2} \left( u^{n+1,k}\frac{\partial \omega^{n+1,k}}{\partial x} + v^{n+1,k}\frac{\partial \omega^{n+1,k} }{\partial y} 
++ u^{n}\frac{\partial \omega^{n}}{\partial x} + v^{n}\frac{\partial \omega^{n} }{\partial y} \right)\right] \notag
+\\&{}=\frac{\mu}{2}\Delta\left(\omega^{n+1,k+1}+\omega^n\right) + \left.\left(\frac{\partial fx}{\partial y}-\frac{\partial fy}{\partial x} \right)\right\rvert_{t=(n+0.5)\delta t},\notag
+\end{align}
+and
+\begin{align} \label{eq:Ns2dStrVorBCn}
+&{}\Delta \psi^{n+1,k+1} = -\omega^{n+1,k+1}, \quad u^{n+1,k+1}=\frac{\partial \psi^{n+1,k+1}}{\partial y}, \quad v^{n+1,k+1}=-\frac{\partial \psi^{n+1,k+1}}{\partial x}.
+\end{align}
+In these equations, the superscript $n$ denotes the timestep and the superscript $k$ denotes the iterate. Another choice of time discretization is the implicit midpoint rule which gives,
+\begin{align} \label{eq:Ns2dStrVorAimr}
+&{}\hspace{2em}\rho\left[\frac{\omega^{n+1,k+1}-\omega^n}{\delta t} \right.
+\\&{}\left.+ \left(\frac{u^{n+1,k}+u^n}{2}\right)\frac{\partial}{\partial x}\left(\frac{\omega^{n+1,k}+\omega^n}{2}\right) + \left(\frac{v^{n+1,k}+v^n}{2}\right)\frac{\partial}{\partial y}\left(\frac{ \omega^{n+1,k} +\omega^n}{2}\right)\right] \notag
+\\&{}=\frac{\mu}{2}\Delta\left(\omega^{n+1,k+1}+\omega^n\right) + \left.\left(\frac{\partial fx}{\partial y}-\frac{\partial fy}{\partial x} \right)\right\rvert_{t=(n+0.5)\delta t},\notag
+\end{align}
+and
+\begin{align} \label{eq:Ns2dStrVorBimr}
+&{}\Delta \psi^{n+1,k+1} = -\omega^{n+1,k+1}, \quad u^{n+1,k+1}=\frac{\partial \psi^{n+1,k+1}}{\partial y}, \quad v^{n+1,k+1}=-\frac{\partial \psi^{n+1,k+1}}{\partial x}.
+\end{align}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{The Three-Dimensional Case}
+
+Here $\mathbf u = (u(x,y,z,t),v(x,y,z,t),w(x,y,z,t))$ -- unfortunately, it is not clear if this equation has a unique solution for reasonable boundary conditions and initial data. Numerical methods so far seem to indicate that the solution is unique, but in the absence of a proof, we caution the reader that we are {\it fearless engineers writing gigantic codes that are supposed to produce solutions to the Navier-Stokes equations when what we are really studying is the output of the algorithm} which we hope will tell us something about these equations\footnote{This is paraphrased from Gallavoti\cite[p.~VIII]{Gal02}} -- in practice, although the mathematical foundations for this are uncertain, these codes do seem to give information about the motion of nearly incompressible fluids in many, although not all situations of practical interest. Further information on this aspect of these equations can be found in Doering and Gibbon~\cite{DoeGib95}.
+
+We will again consider simulations with periodic boundary conditions to make it easy to apply the Fourier transform. This also makes it easier to enforce the incompressibility constraint by using an idea due to Orszag and Patterson~\cite{OrsPat72} and also explained in Canuto et al.~\cite[p.~99]{CHQZ07}. If we take the divergence of the Navier-Stokes equations, we get
+\begin{align}
+\nabla\cdot \left(\mathbf u\cdot\nabla\mathbf u\right)=-\Delta p
+\end{align}
+because $\nabla\cdot\mathbf u=0$. Hence
+\begin{align}
+&{}p=-\Delta^{-1}\left[\nabla\cdot \left(\mathbf u\cdot\nabla\mathbf u\right)\right] 
+\end{align}
+where $\Delta^{-1}$ is defined using the Fourier transform, thus if $f(x,y,z)$ is a mean zero, periodic scalar field and $\hat{f}$ is its Fourier transform, then
+$$\widehat{\Delta^{-1}f}=\frac{\hat{f}}{k_x^2+k_y^2+k_z^2}$$
+where $k_x$, $k_y$ and $k_z$ are the wavenumbers. The Navier-Stokes equations then become
+\begin{align}
+&{}\frac{\partial \mathbf u}{\partial t}=\frac{1}{\textup{Re}}\Delta \mathbf u - \mathbf u\cdot\nabla\mathbf u +\nabla \Delta^{-1}\left[\nabla\cdot \left(\mathbf u\cdot\nabla\mathbf u\right)\right], \label{eq:NS3dOrsPat}
+\end{align}
+for which the incompressibility constraint is satisfied, provided the initial data satisfy the incompressibility constraint. 
+
+To discretize \eqref{eq:NS3dOrsPat} in time, we will use the implicit midpoint rule. This gives,
+\begin{align}
+\hspace{1em}\frac{\mathbf u^{n+1}-\mathbf u^{n}}{\delta t} =&{}\frac{0.5}{\textup{Re}}\Delta\left( \frac{\mathbf u^{n+1}+\mathbf u^{n}}{2}\right)  - 0.25\left(\mathbf u^{n+1} + \mathbf u^{n}\right)\cdot\nabla\left(\mathbf u^{n+1} + \mathbf u^{n} \right)  \notag
+\\&{}\hspace{1em} + 0.25\nabla\left[ \Delta^{-1}\left(\nabla\cdot \left[\left(\mathbf u^{n+1} + \mathbf u^{n}\right) \cdot\nabla\left(\mathbf u^{n+1} + \mathbf u^{n} \right)\right]\right)\right]. \label{eq:NS3dOrsPatIMR}
+\end{align}
+
+It is helpful to test the correctness of the programs by comparing them to an exact solution. Shapiro~\cite{Sha93} has found the following exact solution which is a good test for meteorological hurricane simulation programs, as well as for Navier-Stokes solvers with periodic boundary conditions
+\begin{align*}
+&{} u= -\frac{A}{k^2+l^2}\left[\lambda l\cos(kx)\sin(ly)\sin(mz)+mk\sin(kx)\cos(ly)\cos(mz) \right]\exp\left(-\frac{\lambda^2t}{\textup{Re}}\right)
+\\&{} v= \frac{A}{k^2+l^2}\left[\lambda k\sin(kx)\cos(ly)\sin(mz)-ml\cos(kx)\sin(ly)\cos(mz) \right]\exp\left(-\frac{\lambda^2t}{\textup{Re}}\right)
+\\&{} w= A\cos(kx)\cos(ly)\sin(mz)\exp\left(-\frac{\lambda^2t}{\textup{Re}}\right)
+\end{align*}
+where the constant $\lambda=\sqrt{k^2+l^2+m^2}$ and $l$, $k$ and $m$ are constants choosen with the restriction that the solutions are periodic in space. Further examples of such solutions can be found in Majda and Bertozzi~\cite[sec.~2.3]{MajBer02}.
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Serial Programs}
+We first write Matlab programs to demonstrate how to solve these equations on a single processor. The first program uses Crank-Nicolson timestepping to solve the two-dimensional Navier-Stokes equations and is in listing \ref{lst:Ns2DMatlab}. To test the program, following Laizet and Lamballais\cite{LaiLam09} we use the exact Taylor-Green vortex solution on $(x,y)\in[0,1]\times[0,1]$ with periodic boundary conditions given by
+\begin{align}
+&{}u(x,y,t)=\sin(2\pi x)\cos(2\pi y)\exp(-8\pi^2\mu t)
+\\&{}v(x,y,t)=-\cos(2\pi x)\sin(2\pi y)\exp(-8\pi^2\mu t).
+\end{align}
+
+\lstinputlisting[style=matlab_style,label=lst:Ns2DMatlab,caption={A Matlab program which finds a numerical solution to the 2D Navier Stokes equation.}]{./NavierStokes/Programs/NsMatlabCn/NavierStokes2DFFTCn.m}
+
+The second program uses the implicit midpoint rule to do timestepping for the three-dimensional Navier-Stokes equations and it is in listing \ref{lst:Ns3DMatlab}. It also takes the Taylor-Green vortex as its initial condition since this has been extensively studied, and so provides a baseline case to compare results against.
+
+\lstinputlisting[style=matlab_style,label=lst:Ns3DMatlab,caption={A Matlab program which finds a numerical solution to the 3D Navier Stokes equation.}]{./NavierStokes/Programs/NsMatlab3Dimr/NavierStokes3DfftIMR.m}
+
+% subsection
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Show that for the Taylor-Green vortex solution, the nonlinear terms in the two-dimensional Navier-Stokes equations cancel out exactly.
+\item[2)] Write a Matlab program that uses the implicit midpoint rule instead of the Crank-Nicolson method to obtain a solution to the 2D Navier-Stokes equations. Compare your numerical solution with the Taylor-Green vortex solution.
+\item[3)] Write a Fortran program that uses the implicit midpoint rule instead of the Crank-Nicolson method to obtain a solution to the 2D Navier-Stokes equations. Compare your numerical solution with the Taylor-Green vortex solution.
+\item[4)] Write a Matlab program that uses the Crank-Nicolson method instead of the implicit midpoint rule  to obtain a solution to the 3D Navier-Stokes equations. 
+\item[5)] Write a Fortran  program that uses the Crank-Nicolson method instead of the implicit midpoint rule  to obtain a solution to the 3D Navier-Stokes equations.
+\item[6)] The Navier-Stokes equations as written in eqs.\ \eqref{eq:Ns2dStrVorA} and \eqref{eq:Ns2dStrVorB} also satisfy further integral properties. In particular show that
+\begin{enumerate}
+\item[a)] $$\frac{\rho}{2}\frac{\mathrm{d}}{\mathrm{d}t}\lVert \omega \rVert_{l^2}^2= -\mu\lVert \nabla \omega \rVert_{l^2}^2,$$
+where 
+$$\lVert \omega \rVert_{l^2}^2=\int\int(\omega)^2\mathrm{d}x\mathrm{d}y$$
+and
+$$\lVert \nabla \omega \rVert_{l^2}^2=\int\int(\nabla\omega)\cdot(\nabla\omega)\mathrm{d}x\mathrm{d}y.$$
+HINT: multiply the Eq.\ \eqref{eq:Ns2dStrVorA} by $\omega$ then integrate by parts. 
+\item[b)] Show that part (a) implies that 
+$$\lVert \omega(t=T) \rVert_{l^2}^2-\lVert \omega(t=0) \rVert_{l^2}^2=-\mu\int_0^T\lVert \nabla \omega \rVert_{l^2}^2\mathrm{d}t$$
+\item[c)] Part (b) gives a property one can check when integrating the 2D Navier-Stokes equations. We now show that the implicit midpoint rule satisfies an analogous property. Multiply eq.\ \eqref{eq:Ns2dStrVorAimr} by $0.5(\omega^{n+1}+\omega^n)$, integrate by parts in space, then sum over time to deduce that
+$$\lVert \omega^N \rVert_{l^2}^2-\lVert \omega^0 \rVert_{l^2}^2=-\frac{\mu}{4}\sum_{n=0}^{N-1}\left\lVert \nabla\left( \omega^n+\omega^{n+1}\right) \right\rVert_{l^2}^2\delta t.$$
+\item[d)] Deduce that this implies that the implicit midpoint rule time stepping method is unconditionally stable, provided the nonlinear terms can be solved for\footnote{We have not demonstrated convergence of the spatial discretization, so this result assumes that the spatial discretization has not been done.}.
+\end{enumerate}
+\end{enumerate}
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Parallel Programs: OpenMP}
+
+Rather than give fully parallelized example programs, we instead give a simple implementation in Fortran of the Crank-Nicolson  and implicit midpoint rule algorithms for the two-dimensional and three dimensional Navier-Stokes equations that were presented in Matlab. The program for the two-dimensional equations is presented in listing \ref{lst:For2dNs} and an example Matlab script to plot the resulting vorticity fields is in listing \ref{lst:MatlabPlot2dNS}. This program is presented in listing \ref{lst:For3dNs} and an example Matlab script to plot the resulting vorticity fields is in listing \ref{lst:MatlabPlot3dNS}.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNs,caption={A Fortran program to solve the 2D Navier-Stokes equations.}]{./NavierStokes/Programs/NavierStokes2dFortran/navierstokes.f90}
+
+\lstinputlisting[style=matlab_style,label=lst:MatlabPlot2dNS,caption={A Matlab program to plot the vorticity fields and error produced by listing \ref{lst:For2dNs}.}]{./NavierStokes/Programs/NavierStokes2dFortran/plotdata.m}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dNs,caption={A Fortran program to solve the 3D Navier-Stokes equations.}]{./NavierStokes/Programs/NavierStokes3dFortran/NavierStokes3DfftIMR.f90}
+
+\lstinputlisting[style=matlab_style,label=lst:MatlabPlot3dNS,caption={A Matlab program to plot the vorticity fields produced by listing \ref{lst:For3dNs}.}]{./NavierStokes/Programs/NavierStokes3dFortran/plotdata.m}
+
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Verify that the program in listing \ref{lst:For2dNs} is second order accurate in time.
+\item[2)] Use OpenMP directives to parallelize the example Fortran code for the two-dimensional Navier Stokes equations. Try and make it as efficient as possible.
+\item[3)] Write another code which uses threaded FFTW to do the Fast Fourier transforms. This code should have a similar structure to the program in listing \ref{lst:For2dNlsOmp2}. 
+\item[4)] Use OpenMP directives to parallelize the example Fortran code for the three-dimensional Navier-Stokes equations in listing \ref{lst:For3dNs}. Try and make it as efficient as possible.
+\item[5)] Write another code which uses threaded FFTW to do the Fast Fourier transforms for the three-dimensional Navier-Stokes equations. This code should have a similar structure to the program in listing \ref{lst:For2dNlsOmp2}. 
+\end{enumerate}
+%%%%%%%
+%Section
+%%%%%%%
+\section{Parallel Programs: MPI}
+
+The code for this is very similar to the serial code in listing \ref{lst:For2dNs}. For completeness and to allow one to see how to parallelize other programs, we include it. The program uses the library 2DECOMP\&FFT. One difference between this program and the serial program is that a subroutine is included to write out data. Since this portion of the calculation is repeated several times, the program becomes more readable when the repeated code is placed in a subroutine. The subroutine is also generic enough that it can be reused in other programs, saving program developers time.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dNsMPI,caption={A parallel MPI Fortran program to solve the 3D Navier-Stokes equations.}]{./NavierStokes/Programs/NavierStokes3dFortranMPI/NavierStokes3DfftIMR.f90}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For3dNsMPIdata,caption={A subroutine to save real array data for the parallel MPI Fortran program to solve the 3D Navier-Stokes equations in listing \ref{lst:For3dNsMPI}.}]{./NavierStokes/Programs/NavierStokes3dFortranMPI/savedata.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:For3dNsMPImake,caption={A makefile to compile the parallel MPI Fortran program to solve the 3D Navier-Stokes equations.}]{./NavierStokes/Programs/NavierStokes3dFortranMPI/makefile}
+
+
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Use 2DECOMP{\&}FFT to write a two dimensional Navier-Stokes solver. The library is built to do three dimensional FFTs, however by choosing one of the arrays to have only one entry, the library can then do two dimensional FFTs on a distributed memory machine.
+\item[2)] Uecker~\cite{Uec09} describes the expected power law scaling for the power spectrum of the enstrophy\footnote{The enstrophy is the square of the vorticity.} in two dimensional isotropic turbulence. Look up Uecker~\cite{Uec09} and then try to produce numerical data which verifies the power scaling law over as many decades of wavenumber space as are feasible on the computational resources you have access to. A recent overview of research work in this area can be found in Boffetta and Ecke~\cite{BofEck12}. Fornberg~\cite{For77} discusses how to calculate power spectra.
+\item[3)] If we set $\mu=0$ the Navier Stokes equations become the Euler equations. Try to use the implicit midpoint rule and/or the Crank-Nicolson methods to simulate the Euler equations in either two or three dimensions. See if you can find good iterative schemes to do this, you may need to use Newton iteration. An introduction to the Euler equations is in Majda and Bertozzi~\cite{MajBer02}.
+\item[4)] The Taylor-Green vortex flow initial conditions have been studied as a possible flow that could have a blow up in the maximum value of the absolute value of the gradient of the velocity at a point for the Euler and Navier-Stokes equations. In many of these simulations, symmetries have been used to get higher effective resolutions, see for example Cichowlas and Brachet~\cite{CicBra05}. Consider using the Kida-Pelz and Taylor-Green vortex as initial conditions for the Euler equations and adding non-symmetric perturbations. If you are unable to get an implicit time-stepping scheme to work, consider using an explicit scheme such as a Runge-Kutta method. How does the flow evolve in comparison to previous studies in the literature? An introduction to the blow up for the Euler equations is in Majda and Bertozzi~\cite{MajBer02}.
+\item[5)] The three dimensional program we have written is not the most efficient since one can use a real to complex transform to halve the work done. Implement a real to complex transform in one of the Navier-Stokes programs.
+\item[6)] The programs we have written can also introduce some aliasing errors.  By reading a book on spectral methods, such as Canuto et al.~\cite{CHQZ07}, find out what aliasing errors are. Explain why the strategy explained in Johnstone~\cite{Joh12} can reduce aliasing errors. 
+\end{enumerate}

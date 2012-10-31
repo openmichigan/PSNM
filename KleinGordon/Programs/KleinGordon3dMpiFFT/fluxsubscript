@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -N 3Dkg
+#PBS -l nodes=1:ppn=1,walltime=04:15:00
+#PBS -q flux
+#PBS -l qos=muite_flux
+#PBS -A muite_flux
+#PBS -M muite@umich.edu
+#PBS -m abe
+#PBS -V
+#
+cd /nobackup/muite/KG3D
+
+mpirun ./kg

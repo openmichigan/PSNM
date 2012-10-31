@@ -1,0 +1,318 @@
+\chapter{Introduction to Parallel Programming}
+%%%%%%%
+% Section
+%%%%%%%
+\section{Overview of OpenMP and MPI}
+
+To solve large computational problems quickly, it is necessary to take advantage of multiple cores on a CPU (central processing units) and multiple CPUs. Most programs written up until now are sequential and compilers will not typically automatically generate parallel executables,  so programmers need to modify the original serial computer code to take advantage of extra processing power. Two standards which specify what libraries that allow for parallel programming should do are OpenMP and MPI (the message passing interface). In this section, we cover the minimal amount of information required to understand, run and modify the programs in this tutorial. More detailed tutorials can be found at \url{https://computing.llnl.gov/tutorials/} and at \url{http://www.citutor.org}.
+
+OpenMP is used for parallel programming on shared memory architectures -- each compute process has a global view of memory. It allows one to incrementally parallelize an existing Fortran, C or C++ code by adding directives to the original code. It is therefore easy to use. However some care is required in getting good performance when using OpenMP. It is easy to add directives to a serial code, but thought is required in creating a program which will show improved performance and give correct results when made to run in parallel. For the numerical solution of multidimensional partial differential equations on regular grids, it is easy to perform efficient and effective loop based parallelism, so a complete understanding of all the features of OpenMP is not required. OpenMP typically allows one to use 10's of computational cores, in particular allowing one to take advantage of multicore laptops, desktops and workstations.
+
+MPI is used for parallel programming on distributed-memory architectures -- when separate compute processes have access to their own local memory and processes must explicitly receive data held in memory belonging to other processes which have sent the data. MPI is a library which allows one to parallelize Fortran, C and C++ programs by adding function calls which explicitly move data from one process to another. Careful thought is required in converting a serial program to a parallel MPI program because the data needs to be decomposed onto different processes, so it is usually difficult to incrementally parallelize a program that uses MPI. The best way to parallelize a program which will use MPI is problem dependent. When solving large problems, one typically does not have enough memory on each process to simply replicate all the data. Thus one wants to split up the data (known as domain decomposition) in such a way as to minimize the amount of message passing that is required to perform a computation correctly. Programming this can be rather complicated and time consuming. Fortunately, by using the 2DECOMP{\&}FFT library~\cite{LiLai10,LaiLi11} which is written on top of MPI, we can avoid having to program many of the data passing operations when writing Fourier spectral codes and still benefit from being able to solve partial differential equations on up to O($10^5$) processor cores.
+
+%%%%%%%
+% Section
+%%%%%%%
+\section{OpenMP}
+Please read the tutorial at \url{https://computing.llnl.gov/tutorials/openMP/}, then answer the following questions:
+
+%subsection
+\subsection{OpenMP Exercises}
+\begin{enumerate}
+\item[1)] What is OpenMP?
+\item[2)] Download a copy of the latest OpenMP specifications from \url{www.openmp.org}. What version number is the latest specification?
+\item[3)] Explain what each of the following OpenMP directives does:
+\begin{enumerate}
+\item[i)] !\$OMP PARALLEL
+\item[ii)] !\$OMP END PARALLEL
+\item[iii)] !\$OMP PARALLEL DO
+\item[iv)] !\$OMP END PARALLEL DO
+\item[v)] !\$OMP BARRIER
+\item[vi)] !\$OMP MASTER
+\item[vii)] !\$OMP END MASTER
+\end{enumerate}
+\item[4)] Try to understand and then run the Hello World program in listing \ref{lst:ForOmpHw}  on 1, 2, 6 and 12 threads. Put the output of each run in your solutions, the output will be in a file of the form\\ 
+\texttt{helloworld.o**********}\\
+where the last entries above are digits corresponding to the number of the run. An example makefile to compile this on Flux is in listing \ref{lst:MakefileOmpHw}. An example submission script is in listing \ref{lst:Fluxsubhelloworld}. To change the number of OpenMP processes that the program will run on from say 2 to 6,  change \\
+\texttt{ppn=2}\\ 
+to\\ 
+\texttt{ppn=6}\\
+and also change the value of the OMP\_NUM\_THREADS variable from\\
+\texttt{OMP\_NUM\_THREADS=2}\\
+to \\
+\texttt{OMP\_NUM\_THREADS=6}\\
+On Flux, there is a maximum of 12 cores per node, so the largest useful number of threads for most applications is 12.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:ForOmpHw,caption={A Fortran program taken from \url{http://en.wikipedia.org/wiki/OpenMP}, which demonstrates parallelism using OpenMP.}]{./IntroductionToParallelProgramming/Programs/Helloworld/helloworld.f90}
+
+\lstinputlisting[style=make_style,language=make,label=lst:MakefileOmpHw,caption={An example makefile for compiling the helloworld program in listing \ref{lst:ForOmpHw}.}]{./IntroductionToParallelProgramming/Programs/Helloworld/makefile}
+
+\lstinputlisting[style=bash_style,language=bash,label=lst:Fluxsubhelloworld,caption={An example submission script for use on Flux.}]{./IntroductionToParallelProgramming/Programs/Helloworld/fluxsubscript}
+
+\item[5)] Add OpenMP directives to the loops in the 2-D heat equation solver. Run the resulting program on 1,3,6 and 12 threads and record the time it takes to the program to finish. Make a plot of the final iterate.
+\end{enumerate}
+%%%%%%%
+% Section
+%%%%%%%
+\section{MPI}
+
+A copy of the current MPI standard can be found at \url{http://www.mpi-forum.org/}. It allows for parallelization of Fortran, C and C++ programs. There are newer parallel programming languages such as Co-Array Fortran (CAF) and Unified Parallel C (UPC) which allow the programmer to view memory as a single addressable space even on a distributed-memory machine. However, computer hardware limitations imply that most of the programming concepts used when writing MPI programs will be required to write programs in CAF and UPC. Compiler technology for these languages is also not as well developed as compiler technology for older languages such as Fortran and C, so at the present time, Fortran and C dominate high performance computing.  An introduction to the essential concepts required for writing and using MPI programs can be found at \url{http://www.shodor.org/refdesk/Resources/Tutorials/}. More information on MPI can be found in Gropp, Lusk and Skjellum~\cite{GroLusSkj99}, Gropp, Lusk and Thakur~\cite{GroLusTha99} and at \url{https://computing.llnl.gov/tutorials/mpi/}. There are many resources available online, however once the basic concepts have been mastered, what is most useful is an index of MPI commands, usually a search engine will give you sources of listings, however we have found the following sites useful:
+\begin{itemize}
+\item \url{http://www.mpi.forum.org/docs/mpi-11-html/node182.html}
+\item \url{http://publib.boulder.ibm.com/infocenter/zos/v1r13/index.jsp?topic=\%2Fcom.ibm.zos.r13.fomp200\%2Fipezps00172.htm}
+\item \url{http://www.open-mpi.org/doc/v1.4/}
+\end{itemize}
+
+% subsection
+\subsection{MPI Exercises}
+\begin{enumerate}
+\item[1)] What does MPI stand for?
+\item[2)] Please read the tutorials at \url{http://www.shodor.org/refdesk/Resources/Tutorials/BasicMPI/} and at \url{https://computing.llnl.gov/tutorials/mpi/}, then explain what the following commands do:
+\begin{itemize}
+\item \texttt{USE mpi} or \texttt{INCLUDE 'mpif.h'} 
+\item \texttt{MPI\_INIT}
+\item \texttt{MPI\_COMM\_SIZE}
+\item \texttt{MPI\_COMM\_RANK}
+\item \texttt{MPI\_FINALIZE}
+\end{itemize}
+\item[3)] What is the version number of the current MPI standard?
+\item[3)] Try to understand the Hello World program in listing \ref{lst:ForMpiHw}. Explain how it differs from \ref{lst:ForOmpHw}. Run the program in listing \ref{lst:ForMpiHw} on 1, 2, 6, 12 and 24 MPI processes\footnote{One can run this program on many more than 24 processes, however, the output becomes quite excessive}. Put the output of each run in your solutions, the output will be in a file of the form\\ 
+\texttt{helloworld.o**********}\\
+where the last entries above are digits corresponding to the number of the run. An example makefile to compile this on Flux is in listing \ref{lst:MakefileMpiHw}. An example submission script is in listing \ref{lst:FluxsubhelloworldMpi}. To change the number of MPI processes that the program will run on from say 2 to 6,  change \\
+\texttt{ppn=2}\\ 
+to\\ 
+\texttt{ppn=6}\\
+and also change the submission script from\\
+\texttt{mpirun -np 2 ./helloworld}\\ 
+to\\ 
+\texttt{mpirun -np 6 ./helloworld}.
+
+On Flux, there is a maximum of 12 cores per node, so if more than 12 MPI processes are required, one needs to change the number of nodes as well. The total number of cores required is equal to the number of nodes multiplied by the number of processes per node. Thus to use 24 processes change  \\
+\texttt{nodes=1:ppn=2}\\ 
+to\\ 
+\texttt{nodes=2:ppn=12}\\
+and also change the submission script from\\
+\texttt{mpirun -np 2 ./helloworld}\\ 
+to\\ 
+\texttt{mpirun -np 24 ./helloworld}.
+
+\lstinputlisting[language=Fortran,label=lst:ForMpiHw,caption={A Fortran program which demonstrates parallelizm using MPI.}]{./IntroductionToParallelProgramming/Programs/HelloworldMpi/helloworld.f90}
+
+\lstinputlisting[language=make,label=lst:MakefileMpiHw,caption={An example makefile for compiling the helloworld program in listing \ref{lst:ForMpiHw}.}]{./IntroductionToParallelProgramming/Programs/HelloworldMpi/makefile}
+
+\lstinputlisting[language=bash,label=lst:FluxsubhelloworldMpi,caption={An example submission script for use on Flux.}]{./IntroductionToParallelProgramming/Programs/HelloworldMpi/fluxsubscript}
+
+\end{enumerate}
+
+\section{A first parallel program: Monte Carlo Integration}
+
+To introduce the basics of parallel programming in a context that is a little more complicated than {\it Hello World}, we will consider Monte Carlo integration. We review important concepts from probability and Riemann integration, and then give example algorithms and explain why parallelization may be helpful.
+
+\subsection{Probability}
+
+\begin{definition} $f:U\subset \mathbb{R}^2 \rightarrow \mathbb{R}_+$ is a {\bf probability density function} if
+$$ \int\int_U f \mathrm{d}A =1$$
+\end{definition}
+
+\begin{definition} If $f$ is a probability density function which takes the set $U\subset\mathbb{R}^2$, then the probability of events in the set $W\subset U$ occurring is
+$$P(W)=\int\int_W f \mathrm{d}A.$$
+\end{definition}
+
+\begin{example} The joint density for it to snow $x$ inches tomorrow and for Kelly to win $y$ dollar in the lottery tomorrow is given by
+$$f=\frac{c}{(1+x)(100+y)}$$
+for
+$$x,y\in [0,100]\times[0,100]$$
+and $f=0$ otherwise. Find $c$.
+\end{example}
+ 
+\begin{definition} Suppose $X$ is a random variable with probability density function $f_1(x)$ and $Y$ is a random variable with a probability density function $f_2(y)$. Then $X$ and $Y$ are {\bf independent random variables} if their joint density function is
+$$f(x,y)=f_1(x)f_2(y).$$
+\end{definition}
+
+\begin{example} The probability it will snow tomorrow and the probability Kelly will win the lottery tomorrow are independent random variables.
+\end{example}
+
+\begin{definition} If $f(x,y)$ is a probability density function for the random variables $X$ and $Y$, the {\bf X mean} is
+$$\mu_1=\bar{X}=\int\int xf\mathrm{d}A$$
+and the {\bf Y mean} is
+$$\mu_2=\bar{Y}=\int\int yf\mathrm{d}A.$$
+\end{definition}
+
+\begin{remark} The X mean and the Y mean are the expected values of X and Y.
+\end{remark}
+
+\begin{definition} If $f(x,y)$ is a probability density function for the random variables $X$ and $Y$, the {\bf X variance} is
+$$\sigma_1^2=\overline{(X-\bar{X})^2}=\int\int (x-\bar{X})^2f\mathrm{d}A$$
+and the {\bf Y variance} is
+$$\sigma_2^2=\overline{(Y-\bar{Y})^2}=\int\int (y-\bar{Y})^2f\mathrm{d}A.$$
+\end{definition}
+
+\begin{definition} The standard deviation is defined to be the square root of the variance.
+\end{definition}
+
+\begin{example} Find an expression for the probability that it will snow more than 1.1 times the expected snowfall and also that Kelly will win more than 1.2 times the expected amount in the lottery.
+\end{example}
+
+\subsection{Exercise}
+\begin{itemize}
+\item[1)] A class is graded on a curve. It is assumed that the class is a representative sample of the population, the probability density function for the numerical score $x$ is given by
+$$ f(x)=C\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right).$$
+For simplicity we assume that $x$ can take on the values $-\infty$ and $\infty$, though in actual fact the exam is scored from $0$ to $100$. 
+\begin{enumerate}
+\item[a)] Determine $C$ using results from your previous homework.
+\item[b)] Suppose there are 240 students in the class and the mean and standard deviation for the class is not reported. As an enterprising student, you poll 60 of your fellow students (we shall suppose they are selected randomly).  You find that the mean for these 60 students is 55\% and the standard deviation is 10\%. Use the Student's t distribution \url{http://en.wikipedia.org/wiki/Student\%27s_t-distribution} to estimate the 90\% confidence interval for the actual sample mean. Make a sketch of the t-distribution probability density function and shade the region which corresponds to the 90\% confidence interval for the sample mean.\footnote{The Student's t distribution is implemented in many numerical packages such as Maple, Mathematica, Matlab, R, Sage etc., so if you need to use to obtain numerical results, it is helpful to use on of these packages.} 
+\end{enumerate}
+
+{\bf Remark} Fortunately, all the students are hard working, so the possibility of a negative score, although possible, is extremely low, and so we neglect it to make the above computation easier.
+\end{itemize}
+
+\subsection{Riemann Integration}
+
+Recall that we can approximate integrals by Riemann sums. There are many integrals one cannot evaluate analytically, but for which a numerical answer is required. In this section, we shall explore a simple way of doing this on a computer. Suppose we want to find 
+$$I2d=\int_0^1\int_0^4 x^2+2y^2\mathrm{d}y\mathrm{d}x.$$
+If we do this analytically we find
+$$I2d=44.$$
+Let us suppose we have forgotten how to integrate, and so we do this numerically. We can do so using the following Matlab code:
+\lstinputlisting[language=Matlab,label=lst:MatlabInt,caption={A Matlab program which demonstrates how to approximate an integral by a sum.}]{./IntroductionToParallelProgramming/Programs/RiemannSum.m}
+
+We can do something similar in three dimensions. Suppose we want to calculate
+$$I3d=\int_0^1\int_0^1\int_0^4 x^2+2y^2+3z^2\mathrm{d}z\mathrm{d}y\mathrm{d}x.$$
+Analytically we find that
+$$I3d=68$$
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Modify the Matlab code to perform the three dimensional integral.
+\item[2)] Try and determine how the accuracy of either the two or three dimensional method varies as the number of subintervals is changed.
+\end{enumerate}
+
+\subsection{Monte Carlo Integration}
+
+\footnote{This section is taken from Chapter 3 of \underline{Vector Calculus} by Michael Corral which is available at \url{http://www.mecmath.net/} and where Java and Sage programs for doing Monte Carlo integration can be found.} It is possible to extend the above integration schemes to higher and higher dimensional integrals. This can become computationally intensive and an alternate method of integration based on probability is often used. The method we will discuss is called the \emph{Monte Carlo method}. The idea behind it is based on the concept of the \emph{average value} of a function, which you learned in single-variable calculus. Recall that for a continuous function $f(x)$, the \textbf{average value} $\bar{f}$ of $f$ over an interval $\lbrack a,b \rbrack$ is defined as \index{Monte Carlo method}\index{average value}
+\begin{equation}\label{eqn:favg}
+ \bar{f} ~=~ \frac{1}{b-a}\int_a^b f(x)\,dx ~.
+\end{equation}
+
+The quantity $b-a$ is the length of the interval $\lbrack a,b \rbrack$, which can be thought of as the ``volume'' of
+the interval. Applying the same reasoning to functions of two or three variables, we define the \textbf{average
+value} of $f(x,y)$ over a region $R$ to be
+\begin{equation}\label{eqn:favg2}
+ \bar{f} ~=~ \frac{1}{A(R)}\iint\limits_{R} f(x,y)\,dA ~,
+\end{equation}
+where $A(R)$ is the area of the region $R$, and we define the \textbf{average
+value} of $f(x,y,z)$ over a solid $S$ to be
+\begin{equation}\label{eqn:favg3}
+ \bar{f} ~=~ \frac{1}{V(S)}\iiint\limits_{S} f(x,y,z)\,dV ~,
+\end{equation}
+where $V(S)$ is the volume of the solid $S$. Thus, for example, we have
+\begin{equation}\label{eqn:favgint2}
+ \iint\limits_{R} f(x,y)\,dA ~=~ A(R)\bar{f} ~.
+\end{equation}
+The average value of $f(x,y)$ over $R$ can be thought of as representing the sum of all the values of $f$ divided by
+the number of points in $R$. Unfortunately there are an infinite number (in fact, \emph{uncountably} many) points
+in any region, i.e. they can not be listed in a discrete sequence. But what if we took a
+very large number $N$ of \emph{random} points in the region $R$ (which can be generated by a computer) and then took the
+average of the values of $f$ for those points, and used that
+average as the value of $\bar{f}$? This is exactly what the Monte Carlo method does. So in formula (\ref{eqn:favgint2})
+the approximation we get is
+\begin{equation}\label{eqn:monte}
+ \iint\limits_{R} f(x,y)\,dA ~\approx~ A(R)\bar{f} \pm A(R)\sqrt{\frac{\overline{f^2} - (\bar{f})^2}{N}} ~,
+\end{equation}
+where
+\begin{equation}
+ \bar{f} ~=~ \frac{\sum_{i=1}^N f(x_i,y_i)}{N} \quad \text{and} \quad \overline{f^2} ~=~
+ \frac{\sum_{i=1}^N (f(x_i,y_i))^2}{N} ~,
+\end{equation}
+with the sums taken over the $N$ random points $(x_1,y_1)$, $\ldots$, $(x_N,y_N)$.
+The $\pm$ ``error term'' in formula (\ref{eqn:monte}) does not really provide
+hard bounds on the approximation. It represents a single \emph{standard deviation} from the \emph{expected} value of the
+integral. That is, it provides a \emph{likely} bound on the error. Due to its use of random points, the Monte Carlo
+method is an example of a \emph{probabilistic} method (as opposed to \emph{deterministic} methods such as the Riemann sum approximation method, which use a specific formula for generating points).
+
+For example, we can use the formula in eq.\ \eqref{eqn:monte} to approximate the volume $V$ under the surface $z=x^2+2y^2$ over the
+rectangle $R =(0,1)\times(0,4)$. Recall that the actual volume is $44$. Below is a  Matlab code  that calculates the volume using Monte Carlo integration
+
+\lstinputlisting[language=Matlab,label=lst:MatlabMC,caption={A Matlab program which demonstrates how to use the Monte Carlo method to calculate the volume below $z=x^2+2y^2$, with $(x,y)\in(0,1)\times(0,4)$.}]{./IntroductionToParallelProgramming/Programs/MonteCarlo2d.m}
+
+The results of running this program with various numbers of random points are shown below:
+\begin{verbatim}
+N = 16: 41.3026 +/- 30.9791
+N = 256: 47.1855 +/- 9.0386
+N = 4096: 43.4527 +/- 2.0280
+N = 65536: 44.0026 +/- 0.5151
+\end{verbatim}
+
+As you can see, the approximation is fairly good. As $N \to \infty$, it can be shown that the Monte Carlo approximation converges to the actual volume (on the order of $O(\sqrt{N})$, in computational complexity terminology).
+
+In the above example the region $R$ was a rectangle. To use the Monte Carlo method for a nonrectangular
+(bounded) region $R$, only a slight modification is needed. Pick a rectangle $\tilde{R}$ that encloses $R$, and
+generate random points in that rectangle as before. Then use those points in the calculation of $\bar{f}$ only if they are inside
+$R$. There is no need to calculate the area of $R$ for formula (\ref{eqn:monte}) in this case, since the exclusion of
+points not inside $R$ allows you to use the area of the rectangle $\tilde{R}$ instead, similar to before.
+
+For instance, one can show that the volume under the surface $z=1$ over the nonrectangular region $R = \left\{ (x,y): 0 \le x^2+y^2 \le 1\right\}$ is $\pi$. Since the rectangle $\tilde{R} = [-1,1] \times [ -1,1]$ contains $R$, we can use a similar program to the one we used, the largest change being a check to see if $y^2+x^3 \leq 1$ for a random point $(x,y)$ in $[-1,1] \times [ -1,1]$. A Matlab code listing which demonstrates this is below:
+
+\lstinputlisting[language=Matlab,label=lst:MatlabMCirreg,caption={A Matlab program which demonstrates how to use the Monte Carlo method to  calculate the area of an irregular region and also to calculate $\pi$.}]{./IntroductionToParallelProgramming/Programs/MonteCarlo2dV2.m}
+
+The results of running the program with various numbers of random points
+are shown below:
+
+\begin{verbatim}
+N = 16: 3.5000 +/- 2.9580
+N = 256: 3.2031 +/- 0.6641
+N = 4096: 3.1689 +/- 0.1639
+N = 65536: 3.1493 +/- 0.0407
+\end{verbatim}
+
+To use the Monte Carlo method to evaluate triple integrals, you will need to generate random triples $(x,y,z)$ in a
+parallelepiped, instead of random pairs $(x,y)$ in a rectangle, and use the volume of the parallelepiped instead of the
+area of a rectangle in formula (\ref{eqn:monte}). For a more detailed discussion of numerical integration methods, please take a further course in mathematics.
+
+\subsection{Exercises}
+\begin{enumerate}
+ \item[1)] Write a program that uses the Monte Carlo method to approximate the double integral
+  $\iint\limits_{R} e^{xy}\,dA$, where $R = \lbrack 0,1 \rbrack \times \lbrack 0,1 \rbrack$. Show the program output
+  for $N=10$, $100$, $1000$, $10000$, $100000$ and $1000000$ random points.
+ \item[2)] Write a program that uses the Monte Carlo method to approximate the triple integral
+  $\iiint\limits_{S} e^{xyz}\,dV$, where $S= \lbrack 0,1 \rbrack \times \lbrack 0,1 \rbrack \times \lbrack 0,1 \rbrack$.
+  Show the program output for $N=10$, $100$, $1000$, $10000$, $100000$ and $1000000$ random points.
+ \item[3)] Use the Monte Carlo method to approximate the volume of a sphere of radius $1$.
+ \end{enumerate}
+
+\subsection{Parallel Monte Carlo Integration}
+
+As you may have noticed, the algorithms are simple, but can require very many grid points to become accurate. It is therefore useful to run these algorithms on a parallel computer. We will demonstrate a parallel Monte Carlo calculation of $\pi$. Before we can do this, we need to learn how to use a parallel computer\footnote{Many computers and mobile telephones produced today have 2 or more cores and so can be considered parallel, but  here we mean computers with over hundreds of cores.}. 
+
+We now examine a Fortran program for calculating $\pi$. These programs are taken from \url{http://chpc.wustl.edu/mpi-fortran.html}, where further explanation can be found. The original source of these programs appears to be \underline{Using MPI} by Gropp, Lusk and Skjellum.
+
+\subsubsection{Serial}
+
+\lstinputlisting[language=Fortran,label=lst:ForMcSerial,caption={A serial Fortran program which demonstrates how to calculate $\pi$ using a Monte Carlo method.}]{./IntroductionToParallelProgramming/Programs/montecarloserial/montecarloserial.f90}
+
+\lstinputlisting[language=make,label=lst:MakefileMcSerial,caption={An example makefile for compiling the program in listing \ref{lst:ForMcSerial}.}]{./IntroductionToParallelProgramming/Programs/montecarloserial/makefile}
+
+\lstinputlisting[language=bash,label=lst:TrestlessubMcSerial,caption={An example submission script for use on Trestles located at the San Diego Supercomputing Center.}]{./IntroductionToParallelProgramming/Programs/montecarloserial/trestlessubscript}
+
+\subsubsection{Parallel}
+
+\lstinputlisting[language=Fortran,label=lst:ForMcMpi,caption={A parallel Fortran program which demonstrates how to calculate $\pi$ using MPI.}]{./IntroductionToParallelProgramming/Programs/montecarloparallel/montecarloparallel.f90}
+
+\lstinputlisting[language=make,label=lst:MakefileMcMpi,caption={An example makefile for compiling the program in listing \ref{lst:ForMcMpi}.}]{./IntroductionToParallelProgramming/Programs/montecarloparallel/makefile}
+
+\lstinputlisting[language=bash,label=lst:TrestlessubMcMpi,caption={An example submission script for use on Trestles located at the San Diego Supercomputing Center.}]{./IntroductionToParallelProgramming/Programs/montecarloparallel/trestlessubscript}
+
+\subsection{Exercises}
+\begin{enumerate}
+\item[1)] Explain why using Monte Carlo to evaluate
+$$\int_0^1\frac{1}{1+x^2}\mathrm{d}x$$
+allows you to find $\pi$ and, in your own words, explain what the serial and parallel programs do.
+\item[2)] Find the time it takes to run the Parallel Monte Carlo program on 32, 64, 128, 256 and 512 cores.
+\item[3)] Use a parallel Monte Carlo integration program to evaluate
+$$\iint x^2+y^6+\exp(xy)\cos(y\exp(x))\mathrm{d}A$$
+over the unit circle.
+\item[4)] Use a parallel Monte Carlo integration program to approximate the volume of the ellipsoid $\frac{x^2}{9}+\frac{y^2}{4}+
+  \frac{z^2}{1}=1$. Use either OpenMP or MPI.
+\item[5)] Write parallel programs to find the volume of the 4 dimensional sphere 
+$$1\geq\sum_{i=1}^4 x_i^2.$$
+Try both Monte Carlo and Riemann sum techniques. Use either OpenMP or MPI.
+\end{enumerate}
+

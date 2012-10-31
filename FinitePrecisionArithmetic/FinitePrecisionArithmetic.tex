@@ -1,0 +1,40 @@
+\chapter{Finite Precision Arithmetic}
+
+\footnote{For more on this see a text book on numerical methods such as Bradie~\cite{Bra06}.} Because computers have a fixed amount of memory, floating point numbers can only be stored with a finite number of digits of precision. This limits the accuracy to which the solution to a numerical problem can be obtained in finite time. Most computers use binary IEEE 754 arithmetic to perform numerical calculations. There are other formats, but this will be the one of most relevance to us.
+
+%subsubsection
+\section{Exercises}
+\begin{enumerate}
+\item[1)] Download the most recent IEEE 754 standard. \url{http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=2355}, see also \url{http://grouper.ieee.org/groups/754/} -- unfortunately the links to the official standard requires either IEEE membership or a subscription. If you do not have this please see the wikipedia page (\url{http://en.wikipedia.org/wiki/IEEE_754-2008}) for the information you will need to answer the questions below\footnote{These links are correct as of 1 April 2012, should they not be active, we expect that the information should be obtained by a search engine or by referring to a numerical analysis textbook such as Bradie~\cite{Bra06}.}.
+\begin{enumerate}
+\item[a)] In this standard what is the range and precision of numbers in:
+\begin{enumerate}
+\item[i)] Single precision
+\item[ii)] Double precision
+\end{enumerate} 
+\item[b)] What does the standard specify for quadruple precision?
+\item[c)] What does the standard specify about how elementary functions should be computed? How does this affect the portability of programs?
+\end{enumerate}
+\item[2)] Suppose we discretize a function for $x\in[-1,1]$. For what values of $\epsilon$ is
+$$\epsilon\log\left(\cosh\left(\frac{x}{\epsilon}\right)\right)=\lvert x \rvert$$
+in
+\begin{enumerate}
+\item[i)] Single precision?
+\item[ii)] Double precision?
+\end{enumerate} 
+\item[3)] Suppose we discretize a function for $x\in[-1,1]$. For what values of $\epsilon$ is
+\begin{align*}
+&{}\tanh\left(\frac{x}{\epsilon}\right)
+=\left\{{1 \quad x\geq0}\atop{-1 \quad x < 0}\right.
+\end{align*}
+in
+\begin{enumerate}
+\item[i)] Single precision?
+\item[ii)] Double precision?
+\end{enumerate} 
+\item[4)] 
+\begin{enumerate}
+\item[a)] What is the magnitude of the largest  4 byte integer in  the IEEE 754  specification that can be stored?
+\item[b)] Suppose you are doing a simulation with $N^3$ grid points and need to calculate $N^3$. If $N$ is stored as a 4 byte integer, what is the largest value of $N$ for which $N^3$ can also be stored as a 4 byte integer?
+\end{enumerate}
+\end{enumerate}

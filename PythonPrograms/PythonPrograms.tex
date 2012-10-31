@@ -1,0 +1,37 @@
+\chapter{Python Programs}
+
+Since Matlab requires a licence, we have also included Python versions of some of the Matlab programs. These programs have been tested in Python 2.7 (which can be obtained from \url{http://python.org/}), they also require Matlplotlib (version 1.10, which can be obtained from \url{http://matplotlib.sourceforge.net/index.html}), Mayavi (\url{http://github.enthought.com/mayavi/mayavi/index.html}) and numpy (\url{http://numpy.scipy.org/}). These programs have been tested primarily with the Enthought Python distribution.
+
+\lstinputlisting[style=python_style,language=Python,label=lst:instability,caption={A Python program to demonstrate instability of different time-stepping methods.  Compare this to the Matlab implementation in listing \ref{lst:MatlabInstability}.}]{./PythonPrograms/Programs/PythonCode/Simple_ODE_Example_of_Unstable_FE.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:HeatFE1dPython,caption={A Python program to solve the heat equation using forward Euler time-stepping.  Compare this to the Matlab implementation in listing \ref{lst:HeatFE1dMatlab}.}]{./PythonPrograms/Programs/PythonCode/Heat_Eq_1D_Spectral_FE.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:HeatBE1dPython,caption={A Python program to solve the heat equation using backward Euler time-stepping.  Compare this to the Matlab implementation in listing \ref{lst:HeatBE1dMatlab}.}]{./PythonPrograms/Programs/PythonCode/Heat_Eq_1D_Spectral_BE.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:AllenCahnIE2dPython,caption={A Python program to solve the 2D Allen Cahn equation using implicit explicit time-stepping.  Compare this to the Matlab implementation in listing \ref{lst:AllenCahnIE2dMatlab}.}]{./PythonPrograms/Programs/PythonCode/Allen_Cahn_2D_Spectral_IE.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:BEFPiterPython,caption={A Python program to demonstrate fixed-point iteration. Compare this to the Matlab implementation in listing \ref{lst:BEFPiterMatlab}.}]{./PythonPrograms/Programs/PythonCode/BackwardEulerFixedPoint.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:BENewIterPython,caption={A Python program to demonstrate Newton iteration. Compare this to the Matlab implementation in listing \ref{lst:BENewIterMatlab}.}]{./PythonPrograms/Programs/PythonCode/BackwardEulerNewtonIteration.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:OdeStrangMatlab,caption={A Python program which uses Strang splitting to solve an ODE. Compare this to the Matlab implementation in listing \ref{llst:OdeStrangMatlab}.}]{./PythonPrograms/Programs/PythonCode/ODEsplittingStrang.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:NlsSplit1DPython,caption={A Python program which uses Strang splitting to solve the one-dimensional nonlinear Schr\"{o}dinger equation. Compare this to the Matlab implementation in listing \ref{lst:NlsSplit1DMatlab}.}]{./PythonPrograms/Programs/PythonCode/NLSsplitting1D.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:NlsSplit2DPython,caption={A Python program which uses Strang splitting to solve the two-dimensional nonlinear Schr\"{o}dinger equation. Compare this to the Matlab implementation in listing \ref{lst:NlsSplit2DMatlab}.}]{./PythonPrograms/Programs/PythonCode/NLSsplitting2D.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:NlsSplit3DPython,caption={A Python program which uses Strang splitting to solve the three-dimensional nonlinear Schr\"{o}dinger equation. Compare this to the Matlab implementation in listing \ref{lst:NlsSplit3DMatlab}.}]{./PythonPrograms/Programs/PythonCode/NLSsplitting3D.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Ns2DPython,caption={A Python program which finds a numerical solution to the 2D Navier-Stokes equation. Compare this to the Matlab implementation in listing \ref{lst:Ns2DMatlab}.}]{./PythonPrograms/Programs/PythonCode/NavierStokes2DFFTCn.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg1DPython,caption={A Python program to solve the one-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImEx}. Compare this to the Matlab implementation in listing \ref{lst:MatKg1D}.}]{./PythonPrograms/Programs/PythonCode/KleinGordon1D.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg1Dimp,caption={A Python program to solve the one-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}. Compare this to the Matlab implementation in listing \ref{lst:MatKg1Dimp}.}]{./PythonPrograms/Programs/PythonCode/KleinGordon1Dimp.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg2DPython,caption={A Python program to solve the two-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}. Compare this to the Matlab implementation in listing \ref{lst:MatKg2D}.}]{./PythonPrograms/Programs/PythonCode/KleinGordonImp2Db.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg2DPython,caption={A Python program to solve the two-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}. Compare this to the Matlab implementation in listing \ref{lst:MatKg2D}.}]{./PythonPrograms/Programs/PythonCode/KleinGordonImp2Db.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg2DPython,caption={A Python program to solve the two-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImp}. Compare this to the Matlab implementation in listing \ref{lst:MatKg2D}.}]{./PythonPrograms/Programs/PythonCode/KleinGordonImp2Db.py}
+
+\lstinputlisting[style=python_style,language=Python,label=lst:Kg3DPython,caption={A Python program to solve the three-dimensional Klein Gordon equation \eqref{eq:KleinGordon} using the time discretization in eq.\ \eqref{eq:KgImEx}. Compare this to the Matlab implementation in listing \ref{lst:MatKg3D}.}]{./PythonPrograms/Programs/PythonCode/KleinGordonImp3D.py}

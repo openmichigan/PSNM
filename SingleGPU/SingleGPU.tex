@@ -1,0 +1,30 @@
+
+\chapter{GPU programs for Fourier pseudospectral simulations of the Navier-Stokes, Cubic Nonlinear Schr\"{o}dinger and sine Gordon equations}
+
+This section includes the programs taken from a conference paper by Cloutier, Muite and Rigge~\cite{CloMuiRig12}. The main purpose is to give example programs which show how to use graphics processing units (GPUs) to solve partial differential equations using Fourier methods. For further background on GPUs and programming models for GPUs see Cloutier, Muite and Rigge~\cite{CloMuiRig12}. It should be noted that the algorithms used for the sine Gordon equation are very similar to those for the Klein Gordon equation discussed elsewhere in this tutorial. For consistency with the rest of the tutorial, programs using CUDA Fortran and OpenACC extensions to Fortran are included. GPUs enable acceleration of Fourier pseudospectral codes by factors of 10 compared to OpenMP parallelizations on a single 8 core node.
+
+\section{2D Navier Stokes Equations}
+
+These programs use the Crank-Nicolson method.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNsCUF,caption={A CUDA Fortran program to solve the 2D Navier-Stokes equations.}]{./SingleGPU/Programs/NS/GPUcuf/navierstokes.cuf}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNsACC,caption={An OpenACC  Fortran program to solve the 2D Navier-Stokes equations.}]{./SingleGPU/Programs/NS/GPUacc/navierstokes.f90}
+
+\section{2D Cubic Nonlinear Schr\"{o}dinger Equations}
+
+These programs use splitting.
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNlsCUF,caption={A CUDA Fortran program to solve the 2D Nonlinear Schr\"{o}dinger equation.}]{./SingleGPU/Programs/NLS/GPUcuf/cubicNLS.cuf}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dNlsACC,caption={An OpenACC  Fortran program to solve the  2D Nonlinear Schr\"{o}dinger equation.}]{./SingleGPU/Programs/NLS/GPUacc/cubicNLS.f90}
+
+
+\section{2D sine-Gordon Equations}
+
+These programs use a semi-explicit method that is similar to that used for the Klein-Gordon equation. Only the main program is included here, and the auxiliary subroutines can be downloaded from Cloutier, Muite and Rigge~\cite{CloMuiRig12}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dSgCUF,caption={A CUDA Fortran program to solve the 2D sine-Gordon equation.}]{./SingleGPU/Programs/sineGordon/GPUcuf/sgsemiimp2d.cuf}
+
+\lstinputlisting[style=fortran_style,language=Fortran,label=lst:For2dSgACC,caption={An OpenACC  Fortran program to solve the  2D sine-Gordon equation.}]{./SingleGPU/Programs/sineGordon/GPUacc/sgsemiimp2d.f90}
+

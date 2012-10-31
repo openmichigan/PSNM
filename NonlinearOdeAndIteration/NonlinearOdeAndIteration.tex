@@ -1,0 +1,329 @@
+\chapter{Nonlinear Ordinary Differential Equations and Iteration}
+
+The implicit explicit method avoids the direct solution of nonlinear problems. This can be advantageous for some problems, but can also lead to severe time step restrictions in others. Furthermore, the resulting numerical schemes can sometimes have undesirable qualitative properties. For this reason, we need to describe methods that allow us to solve the nonlinear equations generated in fully-implicit numerical schemes. 
+
+We consider an ordinary differential equation 
+\begin{equation}
+\frac{\mathrm{d}y}{\mathrm{d}t}=f(t,y) 
+\end{equation}
+for $t\in[t_{0},t^{*}]$, and for which $f(t,y)$ is not necessarily a linear function of $y$. We want to use an implicit numerical method to obtain an approximate solution of this problem -- for example backward Euler's method. If we want to demonstrate the convergence of the numerical scheme, we need to demonstrate convergence of functional iteration which we use to find the solution for the nonlinear equation term in using backward Euler's method. 
+
+The results that follow are primarily taken from Iserles~\cite{Ise09}, although this material is also often found in calculus texts such as Lax, Burstein and Lax~\cite{LaxBurLax76}, and Hughes et al.~\cite{HugEtAl08}. We will let $t_{i}$ denote the time at time step $i$, $y_{i}$ denote the approximate solution at time step $i$ and $h$ denote the time step. We will assume $f$ is Lipschitz continuous, a condition that is weaker than differentiable but stronger than continuous, which we will give a precise definition of.  There are two classical iteration methods:
+\begin{itemize}
+\item fixed-point iteration 
+\item Newton's (Newton-Raphson) method.
+\end{itemize}
+We will prove convergence of these two methods (a proof of the convergence of the modified Newton-Raphson method is in Iserles~\cite[p. 130]{Ise09}). We will analyze the specific problem $y'(t)=y^{2}$ with initial data
+$y(0)=1$ and $t\in[0,0.99]$. 
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Exact Solution to an Example Nonlinear Ordinary Differential Equation}
+
+We consider
+\begin{equation}
+\frac{\mathrm{d}y}{\mathrm{d}t}=y^{2}
+\end{equation}
+with initial data $y(t=0)=1$ and $t\in[0,0.99]$.  Whenever the solution $y(t)$ exists, it will be positive all the time, because the initial value is positive and $\frac{\mathrm{d}y}{\mathrm{d}t}$ is positive. 
+
+To integrate this equation explicitly, we use separation of variables to find that
+\begin{align}
+&{}\int_{y(0)}^{y(t)}\frac{1}{\tilde{y}^{2}}\mathrm{d}\tilde{y}=\int_0^t\mathrm{d}\tau
+\end{align}
+which implies 
+\begin{equation}
+-\frac{1}{y(t)}=t+c
+\end{equation}
+where $c$ is the constant of integration. Using our initial data we get $c=-1$, so
+\begin{equation}
+y(t)=\frac{1}{1-t}
+\end{equation}
+is our exact solution for this problem. We will use this exact solution to compare the numerical solutions obtained by the different iterative methods. Notice that this exact solution becomes infinite as $t\rightarrow1$. 
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Definitions Required to Prove Convergence}
+
+\begin{definition}{\bf The Lipschitz Condition}
+A function $f(x):x\in D\subset\mathbb{R}$ is Lipschitz if $\left\Vert f(x_1)-f(x_2)\right\Vert \leq\lambda\left\Vert x_1-x_2\right\Vert $ for all $x_1$ and $x_2$ in the domain $D$.
+\end{definition}
+
+There are two specific definitions of the Lipschitz condition.
+
+\begin{definition}{\bf Locally Lipschitz Condition}
+The function $f(x)$ is called locally Lipschitz if, for each $z\in\mathbb{R}$, there exists an $L>0$ such that $f$ is Lipschitz on the open ball of center $z$ and radius $L$. 
+\end{definition}
+
+\begin{definition}{\bf Globally Lipschitz Condition}
+If $f(x)$ is Lipschitz on all of the space $\mathbb{R}$ (i.e. The open ball is $\mathbb{R}$ in above definition), then $f$ is globally Lipschitz.
+\end{definition}
+
+Note the fundamental difference between the local and global versions of the Lipschitz-condition. Whereas in the local version the Lipschitz ``constant''($\lambda)$ and the open ball depend on each point $x\in\mathbb{R}$ , in the global version the ``constant''($\lambda)$ is fixed and the open ball is $\mathbb{R}$. In particular, a globally Lipschitz function is locally Lipschitz continuous, but the converse is not true.
+
+
+%%%%%%%
+% Section
+%%%%%%%
+\section{Existence and Uniqueness of Solutions to Ordinary Differential Equations}
+
+Peano's theorem states that if $f(x)$ is continuous, then a solution to the ordinary differential equation $x'(t)=f(x)$ with initial condition $x(t_0)=x_0$ exists  at least in some neighbourhood of time $t_0$ -- this solution need not be unique. Picard's theorem states that if $f(x)$ is locally Lipschitz, then the solution for the ordinary differential equation $x'(t)=f(x)$ with initial condition $x(t_0)=x_0$ is unique when it exists. A comprehensive statement of these theorems is in Iserles~\cite[p. 445]{Ise09}, and there are proofs of these theorems in many books on ordinary differential equations (for example Birkhoff and Rota~\cite[Chap. 6, pg.\ 192]{BirRot89}). 
+ 
+%%%%%%%
+%Section
+%%%%%%%
+\section{Backward Euler}
+
+We recall that the backward Euler method is given by
+\begin{equation}
+y^{n+1}=y^{n}+hf(y^{n+1}).
+\end{equation}
+Note that if $f$ is nonlinear, we need to solve a nonlinear equation in each step advancing the solution (numerical). It is usually hard to solve a nonlinear equation exactly using analytical methods, so we also use numerical methods.  For our example equation, we get
+\begin{equation}
+y^{n+1}=y^{n}+h\left(y^{n+1}\right)^2
+\end{equation}
+This example has the advantage that we can find its solutions algebraically, so we can then examine the behavior of numerical schemes.
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Convergence of Functional Iteration}
+
+We often use functional iteration to solve nonlinear equations. We recall that there are two popular methods: fixed-point iteration and Newton's method.
+
+%subsection
+\subsection{Convergence of the Fixed-Point Method}
+
+We want to find a root of $x=f(x).$ We try to use the fixed-point method and to construct a sequence $x_{n+1}=f(x_{n})$ where $n=0,1,2\ldots$.
+
+\begin{theorem}
+Let $f(x)$ have a fixed-point $\tilde{x}=f(\tilde{x})$, be Lipschitz continuous for $x\in(a, b)\subset\mathbb{R}$ with Lipschitz constant $k<1$ and $f(x)$ be continuous on $[a,b]$. Then the fixed point method $x_{n+1}=f(x_{n})$ converges to the unique fixed-point of $\tilde{x}=x_{\infty}=f(x_{\infty})$ for $x\in[a,b]$.
+\end{theorem}
+
+\begin{proof}
+Since $f(x)$ is Lipschitz continuous, we find that, 
+\begin{equation}
+\left|x_{n+1}-x_{\infty}\right|=\left|f(x_{n})-f(x_{\infty})\right|\leq k\left|x_{n}-x_{\infty}\right|
+\end{equation}
+for $n=1,2\ldots$. Hence by induction we conclude that 
+\begin{equation}
+\left|x_{n+1}-x_{\infty}\right|\leq k^{n}\left|x_{1}-x_{\infty}\right|.
+\end{equation}
+Since $k<1$, $\lim_{n\rightarrow\infty}k^n\lvert x_1-x_{\infty}\rvert=0$, so we obtain a solution $x_{\infty}=f(x_{\infty})$, where $x_{\infty}$ is the fixed point. We can show that the limit is unique by supposing that there are two different limits and reaching a contradiction.\end{proof}
+
+For a proof of the existence of the fixed-point under the assumptions used in this theorem, see a book on numerical analysis, such as Bradie~\cite{Bra06} or Iserles~\cite{Ise09}.
+
+Regarding our problem, we apply fixed-point iteration, we want to find the root of an equation of the form:
+\begin{equation}\label{eq:Fp}
+w=hw^{2}+\beta=f(w). 
+\end{equation}
+When the timestep $h$ is small enough then $f'(w)=2hw\leq200h<1$. So fixed-point iteration is convergent provided the time-step is small enough. We note that eq.\ \eqref{eq:Fp} has two roots, and so the domain of the initial iterate plays an important role in determining which root is choosen.
+
+%subsection
+\subsection{Convergence of Newton's Method}
+
+We now consider Newton's method. We want to find a root, $x^*$ of $f(x)$ such that $f(x^*)=0.$ Newton's method is a fixed-point method where the iterates are constructed by
+\begin{equation}\label{eq:Newton}
+x_{n+1}=x_{n}-\frac{f(x_{n})}{f'(x_{n})}
+\end{equation}
+where $n=0,1,2\ldots$. If the function $f(x)$ is sufficiently well behaved, then Newton's method has a quadratic rate of convergence. 
+
+\begin{theorem}
+Suppose $f(x)$ is twice continuously differentiable and that its second derivative is bounded. Suppose also that there exists $x^*$ for which $f(x^{*})=0$. Suppose $f'(x)\neq0$ in the interval $\left[x^{*}-\left|x^{*}-x_{0}\right|,x^{*}+\left|x^{*}-x_{0}\right|\right]$, $f''(x)$ is finite in the same interval and $\left\lvert x_{0} - x^{*}\right\rvert$ is small. Then, Newton's method is of quadratic convergence.
+\end{theorem}
+
+\begin{proof}
+\begin{equation}
+f(x^{*})=f(x_{n})+f'(x_{n})(x^{*}-x_{n})+\frac{1}{2!}f''(z_{n})(x^{*}-x_{n})^{2}
+\end{equation}
+by Taylor expansion with Lagrange form remainder. In the above $z_{n}\in[x_{n},x^{*}]$. Since $f(x^*)=0$, we have 
+\begin{equation}
+0=f(x_{n})+f'(x_{n})(x^{*}-x_{n})+\frac{1}{2!}f''(z_{n})(x^{*}-x_{n})^{2},
+\end{equation}
+so 
+\begin{equation}
+\frac{f(x_{n})}{f'(x_{n})}+(x^{*}-x_{n})=-\frac{1}{2!}\frac{f''(z_{n})}{f'(z_{n})}(x^{*}-x_{n})^{2}.
+\end{equation}
+Plug in the formula for $x_{n+1}$, from eq.\ \eqref{eq:Newton}  we have 
+\begin{equation}
+x^{*}-x_{n+1}=-\frac{1}{2!}\frac{f''(z_{n})}{f'(z_{n})}(x^{*}-x_{n})^{2}.
+\end{equation}
+Let
+\begin{equation}
+e_{n}=\left|x^{*}-x_{n}\right|.
+\end{equation} 
+We have 
+\begin{equation}
+e_{n+1}=\left|\frac{1}{2!}\frac{f''(z_{n})}{f'(z_{n})}\right|e_{n}^{2}
+\end{equation}
+and by our assumption, we know there is a constant $c$ such that
+\begin{equation}
+\left|\frac{1}{2!}\frac{f''(z_{n})}{f'(z_{n})}\right|<c.
+\end{equation}
+Hence we have $e_{n+1}<me_{n}^{2}$ for some finite constant $m$. So Newton's method is convergent provided $e_0=\lvert x_0-x^*\rvert$ is sufficiently small.
+\end{proof}
+
+Regarding our problem, we consider 
+\begin{equation}
+f(y)=y-hy^{2}-\beta.
+\end{equation}
+Hence $f'(y)=1-2hy\neq0$ and $f"(y)$ is finite, so our problem satisfies all assumptions if we choose our initial data and initial iterates suitably. Hence the Newton iterations will converge and give an approximation to the nonlinear term in backward Euler's method.
+
+%%%%%%%
+%Section
+%%%%%%%
+\section{Convergence of the Theta Method}
+
+The backward Euler, forward Euler and Crank-Nicolson methods are special case of the theta method, so we will first prove the convergence of the theta method to encompass these three methods. The theta method is the following algorithm,
+\begin{equation}
+y^{n+1}=y^{n}+h[\theta f(t^{n},y^{n})+(1-\theta)f(t^{n+1},y^{n+1})]
+\end{equation}
+where
+$n=0,1,\ldots$ and $\theta\in[0,1]$. Notice that for $\theta=1/2$ we obtain the Crank-Nicolson method or trapezoidal rule.
+
+First, substituting the exact solution $y(t)$ and using the Taylor expansion we have
+\begin{align}
+&{}y(t^{n+1})-y(t^{n})-h[\theta f(t^{n},y(t^{n}))+(1-\theta)f(t^{n+1},y(t^{n+1}))]
+\\&{}=y(t^{n+1})-y(t^{n})-h[\theta y'(t^{n})+(1-\theta)y'(t^{n+1})] \notag
+\\&{} =[y(t^{n})+hy'(t^{n})+\frac{1}{2}h^{2}y''(t^{n})+\frac{1}{6}h^{3}y^{\prime\prime\prime}(t^{n})] \notag
+\\&{}\hspace{2em}-y(t^{n})-h\{\theta y'(t^{n})+(1-\theta)[y'(t^{n})+hy''(t^{n})+\frac{1}{2}h^{2}y^{\prime\prime\prime}(t^{n})]\}+\mathcal{O}(h^{4}) \notag
+\\&{}=\left(\theta-\frac{1}{2}\right)h^{2}y''(t^{n})+\left(\frac{1}{2}\theta-\frac{1}{3}\right)h^{3}y^{\prime\prime\prime}(t^{n})+\mathcal{O}(h^{4}). \notag
+\end{align}
+Subtracting the last expression from 
+\begin{equation}
+y^{n+1}-y^{n}-h[\theta f(t^{n},y^{n})+(1-\theta)f(t^{n+1},y^{n+1})]=0,
+\end{equation}
+we have that when $h$ is small enough
+\begin{align}
+&{}e^{n+1,h}
+\\&{}=e^{n,h}+\theta h[f(t^{n},y(t^{n})+e^{n,h})-f(t^{n},y(t^{n}))] \notag
+\\&{}\hspace{1em}+(1-\theta)h[f(t^{n+1},y(t^{n+1})+e^{n+1,h})-f(t^{n+1},y(t^{n+1}))] \notag
+\\&{} \begin{cases}
+-\frac{1}{12}h^{3}y^{\prime\prime\prime}(t^{n})+\mathcal{O}(h^{4}), & \theta=\frac{1}{2}\\
++(\theta-\frac{1}{2})h^{2}y''(t^{n})+\mathcal{O}(h^{3}), & \theta\neq\frac{1}{2}
+\end{cases} \notag
+\end{align} 
+where $e^{i}=y^{i}-y(t^{i})$. Using the triangle inequality and by the Lipschitz continuity of $f$, there exist constants $c$ and $\lambda$ such that 
+\begin{align}
+&{}\left\Vert e^{n+1,h}\right\Vert
+\\&{} \leq\left\Vert e^{n,h}\right\Vert +\theta h\lambda\left\Vert e^{n,h}\right\Vert +(1-\theta)h\lambda\left\Vert e^{n+1,h}\right\Vert +\begin{cases}
+ch^{3} & \theta=\frac{1}{2}\\
+ch^{2} & \theta\neq\frac{1}{2}
+\end{cases}. \notag
+\end{align}
+When $\theta=\frac{1}{2}$, the theta method reduces to the trapezoidal rule. It is possible to show that the Crank-Nicolson method has second order convergence, see for example, Iserles~\cite{Ise09}. Now let's consider $\theta\neq\frac{1}{2}$, 
+\begin{align}
+&{}\left\Vert e^{n+1,h}\right\Vert \leq\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\left\Vert e^{n,h}\right\Vert +\frac{c}{1-(1-\theta)h\lambda}h^{2}. 
+\end{align}
+
+We claim that 
+\begin{equation}
+\left\Vert e^{n,h}\right\Vert \leq\frac{c}{\lambda}\left[\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{n}-1\right]h
+\end{equation}
+We prove this statement by induction.  When $n=0$, $\left\Vert e^{n,h}\right\Vert =0$, since the initial conditions is exactly calculated. Now suppose this statement is true for $n=k$, where $k\geq0$ and is a integer. We want to show this statement is true for $n=k+1$. Consider
+\begin{equation}
+\left\Vert e^{k+1,h}\right\Vert \leq\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\left\Vert e^{k,h}\right\Vert +\frac{c}{1-(1-\theta)h\lambda}h^{2},
+\end{equation}
+then plug in 
+\begin{equation}
+\left\Vert e^{kn,h}\right\Vert \leq\frac{c}{\lambda}\left[\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{k}-1\right]h.
+\end{equation}
+We have
+\begin{align} 
+&{} \left\Vert e^{k+1,h}\right\Vert 
+\\&{} \leq\frac{c}{\lambda}\left[\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{k+1}-\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right]h+\frac{c}{1-(1-\theta)h\lambda}h^{2} \notag
+\\&{}=\frac{c}{\lambda}\left[\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{k+1}-1\right]h. \notag
+\end{align}
+So our claim is true for all $n$ . Note that 
+\begin{align}
+\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda} &{}=1+\frac{h\lambda}{1-(1-\theta)h\lambda} 
+\\&{}\leq \exp\left(\frac{h\lambda}{1-(1-\theta)h\lambda}\right) \notag
+\end{align}
+by a Taylor expansion of the exponential function. Thus, we have
+\begin{align}
+\left\Vert e^{n,h}\right\Vert&{} \leq\frac{c}{\lambda}\left[\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{n}-1\right]h
+\\&{}\leq\frac{c}{\lambda}\left(\frac{1+\theta h\lambda}{1-(1-\theta)h\lambda}\right)^{n}h \notag
+\\&{}\leq\frac{ch}{\lambda}\exp\left(\frac{nh\lambda}{1-(1-\theta)h\lambda}\right). \notag
+\end{align}
+By our condition, $nh\leq t^{*}.$
+Therefore 
+\begin{equation}
+\left\Vert e^{n,h}\right\Vert \leq\frac{ch}{\lambda}\exp\left(\frac{t^{*}\lambda}{1-(1-\theta)h\lambda}\right).
+\end{equation}
+So we have $\lim_{h\rightarrow0}\left\Vert e^{n,h}\right\Vert =0$ and $0\leq nh\leq t^{*}$. Hence the theta method is convergent
+of order 1 when $\theta\neq\frac{1}{2}.$ 
+
+Note that the backward Euler method is a special case of the theta method when $\theta=0$, so backward Euler's method is convergent of order 1. We arrive at our theorem.
+
+\begin{theorem}
+Backward Euler's method is convergent of order 1.
+\end{theorem}
+
+\begin{remark}
+If $f$ is globally Lipschitz, then we can apply the above argument with respect to any time interval. If $f$ is only locally Lipschitz, then we need to analyze the situation more carefully. First, by Picard's theorem,  there is a unique solution of this ordinary differential equation for a short amount of time.  Indeed, we just need to know that the Lipschitz constant is finite without necessarily needing to know the exact value.
+\end{remark}
+
+\begin{remark} If one did not know of Picard's theorem, one could deduce the existence and uniqueness of solutions to ODEs by using time discretization.
+\end{remark}
+
+Now we consider $y'=y^{2}$ and $t\in[0,0.99]$. The exact solution of this problem is $y(t)=\frac{1}{1-t}$. So $1\leq y\leq100$. In our problem, $f=y^{2}$ is clearly analytic and it is locally Lipschitz. It is easy to show $f$ is not globally Lipschitz. If a function $f(x)$ is globally Lipschitz condition then there is a finite constant $\lambda$ such that 
+\begin{equation}
+\frac{\left\Vert f(x)-f(y)\right\Vert }{\left\Vert x-y\right\Vert }\leq\lambda
+\end{equation}
+for all $x,y\in \mathbb{R}$. In our problem, let $x=0$ and $\left\Vert y\right\Vert \rightarrow\infty,$ it is easy to check 
+\begin{equation}
+\frac{\left\Vert f(x)-f(y)\right\Vert }{\left\Vert x-y\right\Vert }\rightarrow\infty.
+\end{equation}
+We now discuss how one can find local Lipschitz constants $\lambda$. When $f$  is differentiable, we often just differentiate $f$ and find the maximum value of its derivative in the domain of interest. In our example, $f$ is simple and we only need to know that the Lipschitz constant is finite. So we use a more rough method to show that the Lipshitz constant is finite,
+\begin{align}
+&{}\left\Vert f(y^{1})-f(y^{2})\right\Vert 
+=\left\Vert y^{1}+y^{2}\right\Vert \left\Vert y^{1}-y^{2}\right\Vert \leq\left(\left\Vert y^{1}\right\Vert +\left\Vert y^{2}\right\Vert\right)\left\Vert y^{1}-y^{2}\right\Vert. 
+\end{align}
+So it suffices to find the maximal value of $\left\Vert y\right\Vert$ in this problem. In our problem, $y(t)$ is continuous. Furthermore, $y(t)$ will be positive all the time, because the initial value is positive and $y'$ is positive. A continuous function has finite maximal value in a closed and bounded set. Note that the exact solution of our problem is $y(t)=\frac{1}{1-t}$ , so $1\leq y\leq100$. So we know that the Lipschitz constant in our problem is finite.
+
+Finally, we get the convergence of functional iteration and backward Euler's method of our problem. Thus our numerical scheme for $y'=y^{2}$ with initial data $y(0)=1$ and $t\in[0,0.99]$ is convergent.
+
+\begin{corollary}
+By the theorems for existence and uniqueness of the solution for ordinary differential equations and Theorem 4.1 ,Theorem 4.2 and Theorem 4.3, we arrive at our final goal that the numerical solution generated by backward Euler's method with functional iteration exists and is unique when the time-step, $h0$ approaches zero.
+\end{corollary}
+ 
+\begin{remark} This requires careful choice of initial iterates when doing functional iteration.
+\end{remark}
+
+\begin{remark} Typically, the exact solution of an ODE is not known, although it is possible to deduce local Lipschitz continuity. Should the solution become infinite, a numerical method will either not converge or display very large values if the approximate solution closely approximates the exact solution. Some care is required in interpreting such numerical simulations in these cases.
+\end{remark}
+%%%%%%%
+%Section
+%%%%%%%
+\section{Example Programs which use Iteration to Solve a Nonlinear Ordinary Differential Equation}
+
+The following two Matlab programs demonstrate backward Euler's method for the example equation. The first one uses fixed-point iteration to solve for the nonlinear term and the second one uses Newton's method to solve for the nonlinear term. 
+
+\lstinputlisting[style=matlab_style,language=Matlab,label=lst:BEFPiterMatlab,caption={A Matlab program to demonstrate fixed-point iteration.}]{./NonlinearOdeAndIteration/Programs/BackwardEulerFixedPoint.m}
+
+\lstinputlisting[style=matlab_style,language=Matlab,label=lst:BENewIterMatlab,caption={A Matlab program to demonstrate Newton iteration.}]{./NonlinearOdeAndIteration/Programs/BackwardEulerNewtonIteration.m}
+%%%%%%%
+%  Section
+%%%%%%%
+\section{Exercises}
+\begin{enumerate}
+\item[1)] Run the fixed-point iteration program in Matlab and check that the outcome is reasonable. Now investigate how changing the number of time steps taken to go from a time of 0 to a time of 0.99, and the tolerance for fixed point iterations affects the maximum error. In particular try a range of 1,000-1,000,000 (in powers of 10) for the number of time steps and a tolerance ranging from $10^{-1}-10^{-7}$ (in powers of $10^{-1}$). You should observe that there is an ``ideal"  combination of subdivisions and tolerance to minimize the error. What are these combinations? Do this whole process again using Newton iteration instead. How have the answers changed?
+\item[2)] Write a Matlab program to solve $y'=y^2$ with $y(0)=1$ using the Crank-Nicolson method and fixed point iteration. Explain why there are two fixed-points to which the fixed-point iteration can converge. Which of these fixed-points gives the correct approximation to the solution of the differential equation? Comment on how the choice of initial iterate for the fixed-point iteration determines the fixed-point to which the method converges. 
+\item[3)] 
+\begin{enumerate}
+\item[a)] Show that the differential equation $y'=\sqrt{\lvert y\rvert}$, with $y(0)=0$ is not Lipschitz continuous. 
+\item[b)] Find at least two analytical solutions to this differential equation.
+\item[c)] Compute a numerical solution to this differential equations using the forward Euler method.
+\item[d)] Compute a numerical solution to this differential equations using the backward Euler method. Be sure to try different initial guesses for the fixed-point iteration, not just the value at the previous time step; you should be able to calculate the influence of the choice of initial iterate on the selection of solution by the numerical method. Comment on this.
+\item[e)] Compute a numerical solution to this differential equations using the implicit midpoint rule. Be sure to try different initial guesses for the fixed point iteration, not just the value at the previous time step; you should be able to calculate the influence of the choice of initial iterate on the selection of ``solution'' by the numerical method. Comment on this.
+\item[f)] Repeat (d) and (e) with Newton iteration.
+\item[g)] Comment on the applicability of numerical methods for solving differential equations without unique solutions.
+\end{enumerate}
+\item[4)] Modify the program for the 1-D Allen-Cahn equation so that it uses the Crank-Nicolson and fixed-point iteration for the nonlinear term. You will need to calculate the nonlinear term in real space, so that your resulting scheme is
+\begin{equation}
+\frac{\hat{u}^{n+1,k+1}-\hat{u}^n}{\delta t}=\frac{\hat{u}_{xx}^{n+1,k+1}+\hat{u}^n_{xx}}2 + \frac{1}{2}\widehat{\left[u^{n+1,k}- \left(u^{n+1,k} \right)^3\right]}+\frac{1}{2}\widehat{\left[u^{n}- \left(u^{n}\right)^3\right]},
+\end{equation}
+where $n$ denotes the time step and $k$ denotes the iterate. Stop the iterations once the maximum difference between successive iterates is sufficiently small.
+\item[5)] Modify the program for the 2-D Allen-Cahn equation so that it uses the Crank-Nicolson method and fixed-point iteration for the nonlinear term. You will need to calculate the nonlinear term in real space.
+\end{enumerate}

@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -N NLS
+#PBS -l nodes=1:ppn=2,walltime=00:03:00
+#PBS -q flux
+#PBS -l qos=math471f11_flux
+#PBS -A math471f11_flux
+#PBS -M your_username@umich.edu
+#PBS -m abe
+#PBS -V
+#
+# Create a local directory to run and copy your files to local.
+# Let PBS handle your output
+cp ${HOME}/parallelspectralintro/NLSsplitting /nobackup/your_username/NLSsplitting 
+cd /nobackup/your_username
+
+export OMP_NUM_THREADS=2
+./NLSsplitting
+
+#Clean up your files

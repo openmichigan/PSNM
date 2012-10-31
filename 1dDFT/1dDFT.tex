@@ -1,0 +1,62 @@
+\chapter{One-Dimensional Discrete Fourier Transforms}
+\footnote{For more detail, see Olver and Shakiban~\cite{OlvSha06}.} The discrete Fourier transform (DFT) takes a function sampled at a finite number of points and finds the coefficients for the linear combination of trigonometric polynomials that best approximates the function; the number of trigonometric polynomials used is equal to the number of sample points.  Suppose we have a function $f(x)$ which is defined on the interval $a \leq x \leq b$. Due to memory limitations, a computer can only store values at a finite number of sample points, i.e. $a \leq x_0 < x_1 < ... <x_n \leq b$. For our purposes these points will be equally spaced, for example $x_1-x_0=x_3-x_2$, and so we can write
+\begin{eqnarray}
+x_j = a +jh, \qquad j=0,1,2,...,n
+\end{eqnarray}
+where $x_j$ are the \emph{sample points}, $n$ is the number of sample points and
+\begin{eqnarray}
+ h=\frac{b-a}{n}.
+\end{eqnarray}
+It is convenient to use the \emph{standard interval}, for which $0 \leq x \leq 2\pi$. Rewriting $x$ in terms of standard interval yields
+\begin{eqnarray}
+x_0=0,x_1=\frac{2\pi}{n},x_2=\frac{4\pi}{n},x_j=\frac{2j\pi}{n},...,x_{n-1}=\frac{2(n-1) \pi}{n}
+\end{eqnarray}
+Notice how $x_n=2\pi$ is omitted;  periodicity implies that the value of the function at $2\pi$ is the same as the value of the function at $0$, so it need not be included. We will introduce the DFT using the language of linear algebra. Much of this formalism carries over to continuous functions that are being approximated. It also makes it easier to understand the computer implementation of the algorithms. Many computer packages and programs are optimized to perform calculations through matrix operations, so the formalism is also useful when actually calculating transforms. We write the approximation to $f(x)$ at the sample points as a finite dimensional vector
+\begin{eqnarray}
+\bm{f}=(f_0,f_1,...,f_{n-1})^{T}=(f(x_0),f(x_1), ... ,f(x_{n-1}))
+\end{eqnarray}
+where
+\begin{eqnarray}
+ f_j=f(x_j)=f \left(\frac{2 j \pi}{n} \right).
+\end{eqnarray}
+The DFT decomposes the sampled function $f(x)$ into a linear combination of complex exponentials, $\exp(ikx)$ where $k$ is an index. Since
+\begin{eqnarray}
+\exp(ikx)=\cos(kx)+i\sin(kx),
+\end{eqnarray}
+we also obtain an expansion in trigonometric functions, which may be more familiar from courses in calculus and differential equations. Since the function is sampled at $n$ points, the highest frequency of oscillation that can be resolved will have $n$ oscillations. Any frequencies higher than $n$ in the original function are not adequately resolved and cause an \emph{aliasing} error (see, for example, Boyd~\cite{Boy01} or Uecker~\cite{Uec09} for more on this). This error can be reduced by sampling at a greater number of points so that the number of approximating exponentials functions can also be increased. There is a tradeoff between increasing the accuracy of the simulation and the time required for the simulation to complete. For many cases of scientific and practical interest, simulations with up to thousands of grid points can be computed relatively quickly. Below we explain how a function $f(x)$ can be approximated by an interpolating trigonometric polynomial $p(x)$ so that 
+\begin{eqnarray}
+f(x) \approx p(x)=c_0+c_1e^{2ix}+c_2e^{2ix}+...+c_{n-1} e^{(n-1)ix}=\sum\limits_{k=0}^{n-1} c_k e^{ikx}
+\end{eqnarray} 
+The $\approx$ symbol means that $f(x)$ and $p(x)$ agree on each sample point, i.e., $f(x_j)=p(x_j)$ for each $j=0,1,...n-1$, but the interpolated polynomial $p(x)$ is only an approximation of the true solution $f(x)$ away from the sample points.. The $c_n$ are called discrete \emph{Fourier coefficients} and are what we will be looking to solve for. $p(x)$ represents the values of interpolating trigonometric polynomial of degree $\leq n-1$, so if we have the values of these coefficients then we have a function we can use as an approximation of $f(x)$. Since we are working in a finite-dimensional vector space, a useful approach is to rewrite the discrete Fourier series as a vector. We let
+\begin{eqnarray}
+\bm{\omega_k}&=&(e^{ikx_0},e^{ikx_1},e^{ikx_2},...,e^{ikx_n})^T \\
+&=& (1,e^{2k \pi i/n},e^{4k\pi i/n},...,e^{2(n-1)k\pi i/n})^T,
+\end{eqnarray}
+where $k=0,1,...,n-1$. The interpolation conditions, $f(x_j)=p(x_j)$, can also be rewritten in vectorial form
+\begin{eqnarray}\label{eq:FourExp}
+\bm{f}=c_0\bm{\omega_0}+c_1\bm{\omega_1}+...+c_{n-1} \bm{\omega_{n-1}}.
+\end{eqnarray}
+Here $\bm f$ is a vector evaluated at the sample points, which is decomposed into vectors $\bm{\omega}_k$, much as a vector in three dimensional space can be decomposed into the components in the $x$, $y$ and $z$ directions. The DFT allows us to compute the coefficients $c_i$ given the value of the function at the sample points. This may at first seem unmotivated, but in many applications, such as solving differential equations, it is easier to manipulate a linear combination of trigonometric polynomials,  $\bm{\omega_0},...,\bm{\omega_{n-1}}$, than it is to work with the original function. In order to solve for $c_k$, we use the orthonormality of the basis elements $\bm{\omega_0},...,\bm{\omega_{n-1}}$. We now explain how this is done \footnote{For a more detailed explanation see Olver and Shakiban~\cite{OlvSha06}.}. 
+
+Define $\xi_n=e^{2\pi i/n}$. We observe that 
+\begin{equation}
+\left(\xi_n\right)^n=\exp\left(\frac{2\pi i n}{n}\right)=\cos(2\pi ) +i\sin(2\pi )=1
+\end{equation}
+For this reason $\xi_n$ is known as the primitive $n^{\text{th}}$ root of unity. Note also that for $0\leq k < n$, we have that $(\xi_n^k)^n=1$, so all other roots of unity when taken to the power $n$ can be obtained from the primitive $n^{\text{th}}$ root of unity. We will use this to perform the DFT algorithm to calculate the coefficients $c_0,...,c_{k-1}$ in eq.\ \eqref{eq:FourExp}. The main idea behind the DFT algorithm is to use orthogonality of the vectors $\bm \omega_k$. To show the orthogonality between the vectors $\bm \omega_k$ and $\bm \omega_l$, we let $\bm \omega_l^*$ denote the complex conjugate of $\bm \omega_l$, and then take the inner product of $\bm \omega_k$ and $\bm \omega_l$ and find that
+\begin{align*}
+\left<\bm \omega_k, \bm \omega_l \right>&{}=\frac{1}{n}\sum_{m=0}^{n-1}\exp\left(\frac{2\pi ik m}{n}\right)\left[\exp(\frac{2\pi il m}{n})\right]^*
+\\&{}=\frac{1}{n}\sum_{m=0}^{n-1}\exp\left(\frac{2\pi i(k-l) m}{n}\right)
+\\&{}=\frac{1}{n}\sum_{m=0}^{n-1}\cos\left(\frac{\pi(k-l)m}{n}\right)+i\sin\left(\frac{\pi(k-l)m}{n}\right)
+\\&{}=\left\{{1\quad\textup{if } k=l}\atop{0\quad\textup{otherwise}}\right.
+\end{align*}
+To deduce the last part, if $k=l$ then $\exp(0)=1$, and if $k\ne l$, then we are sampling the sine and cosine functions at equally spaced points on over an integral number of wavelengths. Since these functions have equal magnitude positive and negative parts, they sum to zero, much as the integral of a sine or cosine over an integral number of wavelengths is zero. This implies that we can compute the Fourier coefficients in the discrete Fourier sum by taking inner products 
+\begin{eqnarray}
+c_k=<\bm{f},\bm{\omega_k}>=\frac{1}{n} \sum\limits_{m=0}^{n-1} \xi_n^{-mk}f_j.
+\end{eqnarray} 
+We note the close connection between the continuous and discrete settings, where an integral is replaced by a sum.
+
+%%%%%%%%
+%subsection
+%%%%%%%%
+\section{Fast Fourier Transform}
+Computing the Fourier coefficients, $c_0,...,c_{n-1}$ using the DFT from the definition can be very slow for large values of $n$. Computing the Fourier coefficients $c_0,...c_{n-1}$ requires $n^2-n$ complex multiplications and $n^2-n$ complex additions. In 1960, Cooley and Tukey~\cite{CooTuk65} rediscovered a much more efficient way of computing DFT by developing an algorithm known as the Fast Fourier Transforms (FFT) -- the method was known to Gauss, but received little attention since he did not publish it~\cite{HeiJohBur84}. The FFT cuts the number of arithmetic operations down to $O(n\log n)$. For large values of $n$, this can make a huge difference in computation time compared to the standard DFT. The reason why the FFT is so important is that it is heavily used in spectral methods. The basic FFT algorithm used by Cooley and Tukey~\cite{CooTuk65} is well documented in many places, however, there are other implementations of the algorithm and the best version of the algorithm to use depends heavily on computer architecture. We therefore do not give further descriptions here.
