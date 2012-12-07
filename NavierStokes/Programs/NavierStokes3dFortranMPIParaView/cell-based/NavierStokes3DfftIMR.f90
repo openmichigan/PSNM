@@ -121,13 +121,12 @@ PROGRAM main
 
 
   !---------------------------------------------------------------------------------
-  ! mvm comments: All additions marked with !mvm: comment lines.
 
   USE decomp_2d
   USE decomp_2d_fft
   USE decomp_2d_io
   USE MPI
-  !mvm:
+  !coprocessing:
   use NSadaptor_module 
   IMPLICIT NONE   
   ! declare variables
@@ -164,7 +163,7 @@ PROGRAM main
        rhswhatfix, nonlinuhat,&
        nonlinvhat, nonlinwhat,&
        phat,temp_c
-  !mvm: added x,y,z component arrays 
+  !coprocessing: added x,y,z component arrays 
   REAL(kind=8), DIMENSION(:,:,:), ALLOCATABLE     ::  realtemp, realtempx, &
        realtempy, realtempz
   ! MPI and 2DECOMP variables
@@ -450,10 +449,10 @@ PROGRAM main
 
   ! save initial data
   n = 0
-  !mvm: removed savedata calls from coprocessing version
-  !mvm: could have this after the coprocessor initialize and
-  !mvm: followed by a call to the coprocessor to write out the initial data
-  !mvm: image. Otherwise, these are just wasted calls at this spot.
+  !coprocessing: removed savedata calls from coprocessing version
+  !coprocessing: could have this after the coprocessor initialize and
+  !coprocessing: followed by a call to the coprocessor to write out the initial data
+  !coprocessing: image. Otherwise, these are just wasted calls at this spot.
   call coprocessorinitialize("pipeline.py", 11)
 
   DO k=decomp%xst(3),decomp%xen(3); DO j=decomp%xst(2),decomp%xen(2); DO i=decomp%xst(1),decomp%xen(1)
@@ -474,7 +473,7 @@ PROGRAM main
 
   !start timer
   CALL system_clock(start,count_rate)
-  ! mvm: Simulation loop starts here
+  ! coprocessing: Simulation loop starts here
   DO n=1,Nt
      !fixed point
      DO k=decomp%xst(3),decomp%xen(3); DO j=decomp%xst(2),decomp%xen(2); DO i=decomp%xst(1),decomp%xen(1)
@@ -627,7 +626,7 @@ PROGRAM main
         PRINT *,'time',n*dt
      END IF
 
-     !mvm: populating the arrays sent to the coprocessor
+     !coprocessing: populating the arrays sent to the coprocessor
      DO k=decomp%xst(3),decomp%xen(3); DO j=decomp%xst(2),decomp%xen(2); DO i=decomp%xst(1),decomp%xen(1)
         realtempx(i,j,k)=REAL(wy(i,j,k)-vz(i,j,k),KIND=8)
      END DO; END DO ; END DO
@@ -644,7 +643,7 @@ PROGRAM main
              decomp%xst(2),decomp%xen(2),decomp%xst(3),decomp%xen(3), n, n*dt, &
              realtempx, realtempy, realtempz) 
   END DO
-  !mvm:
+  !coprocessing:
   call coprocessorfinalize()
 
   CALL system_clock(finish,count_rate)
@@ -721,7 +720,7 @@ PROGRAM main
        temp_r,kx,ky,kz,uhat,vhat,what,rhsuhatfix,rhsvhatfix,&
        rhswhatfix,phat,nonlinuhat,nonlinvhat,nonlinwhat,temp_c,&
        realtemp,stat=AllocateStatus)         
-  !mvm: deallocate Coprocessing specific arrays
+  !coprocessing: deallocate Coprocessing specific arrays
   deallocate(realtempx, realtempy, realtempz)
   IF (AllocateStatus .ne. 0) STOP
   IF (myid.eq.0) THEN
