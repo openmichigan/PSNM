@@ -1,0 +1,28 @@
+# Example job submission file for Forge.
+#
+#!/bin/csh
+#PBS -l walltime=01:30:00
+#PBS -l nodes=1:ppn=16
+#PBS -V
+
+# Your charging group goes here
+#PBS -A 
+
+#PBS -N cuf-test
+#PBS -m abe
+
+# Your email goes here
+#PBS -M
+ 
+#PBS -q normal
+
+# Note that Forge didn't have X support so OffScreen Mesa was used.
+module load paraview/3.14.1-OSMesa
+unlimit
+
+# Change to actual directory containing binary.
+set run_dir = $HOME/projects/muite/CuF
+cd $run_dir
+time ./ns2dcn
+
+exit
