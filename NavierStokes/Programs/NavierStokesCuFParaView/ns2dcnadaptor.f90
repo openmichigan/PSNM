@@ -11,14 +11,13 @@ module ns2dcnadaptor
   public
 contains
   subroutine navierstokescoprocessor(nx, ny, nz, step, time, omeg)
-    ! nx, ny, nz -- grid dimensions
+    ! nx, ny, nz -- grid dimensions, nz will be 1 since this is a 2D problem.
     ! step       -- current simulation time step
     ! time       -- current simulation time
     ! omega      -- scalar array for the current time step
     integer, intent(in) :: nx, ny, nz, step
     real(kind=8), intent(in) :: time
     real(kind=8), dimension(:,:), intent (in) :: omeg
-    ! mvm: should this be "save" ?
     integer :: flag
 
     ! check if processing this time step
@@ -33,11 +32,11 @@ contains
        
        if (flag .ne. 0) then
           ! grid needed
-          ! defined in adaptor.cxx
+          ! defined in ns2dcnVTKDataSet.cxx
           call createcpimagedata(nx, ny, nz)
        end if
           
-       ! defined in adaptor.cxx
+       ! defined in ns2dcnVTKDataSet.cxx 
        call addfield(omeg)
        
        ! defined in FortranAdaptorAPI.h
