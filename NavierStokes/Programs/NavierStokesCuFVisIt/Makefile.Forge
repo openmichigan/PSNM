@@ -32,7 +32,8 @@ BIN =  ns2dcn
 
 all: $(BIN)
 
-simulationexamplev2.o: simulationexamplev2.f
+# This file comes with the VisIt source, be sure to edit to correct path
+simulationexamplev2.o: /path/to/VisIt/source/simulationexamplev2.f
 	$(F90) -c $(SIMINCDIR) -o $@ $< $(LIBS)
 
 visitcallbacks.o: visitcallbacks.f90
