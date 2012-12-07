@@ -1,4 +1,4 @@
-!mvm: altered for VisIt in situ
+!VisIt: altered for VisIt in situ
 !--------------------------------------------------------------------
 !
 ! PURPOSE
@@ -149,9 +149,9 @@ module cufft
 end module cufft
 
 module globals
-  ! mvm: these vars need to be global because
-  ! mvm: the sim time step subroutine has to have
-  ! mvm: external linkage
+  ! VisIt: these vars need to be global because
+  ! VisIt: the sim time step subroutine has to have
+  ! VisIt: external linkage
   use precision
   implicit none
   real(fp_kind), device, dimension(:,:), allocatable :: u_d, v_d, omeg_d, nl_d, temp2_d, omegcheck_d
@@ -178,7 +178,7 @@ PROGRAM main
   use globals
   IMPLICIT NONE         
 
-  !mvm: include file
+  !VisIt: include file
   include "visitfortransimV2interface.inc"
   REAL(fp_kind), PARAMETER      &
        ::  pi=3.14159265358979323846264338327950288419716939937510d0
@@ -193,12 +193,12 @@ PROGRAM main
   ! Declare variables for GPU   
   real(fp_kind), device, dimension(:,:), allocatable :: omegexact_d
 
-  !mvm: VisIt libsim vars
+  !VisIt: VisIt libsim vars
   integer :: err, visitstate, result, runflag, blocking
 
-  !mvm: takes command line arguments for turning on 
-  !mvm: trace for debugging.
-  !mvm: got this from an example program on the Wiki
+  !VisIt: takes command line arguments for turning on 
+  !VisIt: trace for debugging.
+  !VisIt: got this from an example program on the Wiki
   call simulationarguments()
 
   kersize=min(Nx,256)
@@ -309,11 +309,11 @@ PROGRAM main
   PRINT *,'Got initial data, starting timestepping'     
   CALL system_clock(start,count_rate)
 
-  !mvm: simulation setup
+  !VisIt: simulation setup
   err = visitsetupenv()
 
-  !mvm: note that in general, after every string is
-  !mvm: an integer of string length
+  !VisIt: note that in general, after every string is
+  !VisIt: an integer of string length
   err = visitinitializesim("navierstokes", 12, &
        "2D Navier-Stokes sim connects to VisIt", 38, &
        "/no/useful/path", 15, &
@@ -321,14 +321,14 @@ PROGRAM main
        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN, &
        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
 
-  !mvm: visit 
+  !VisIt: visit 
   runflag = 1 
 
-  !mvm: Example code uses infinite whiles instead of 
-  !mvm: explicit number of timesteps.
+  !VisIt: Example code uses infinite whiles instead of 
+  !VisIt: explicit number of timesteps.
   DO t=1,nplots
 
-     !mvm: visit
+     !VisIt: visit
      if (runflag == 1) then
         blocking = 0
      else
@@ -337,12 +337,12 @@ PROGRAM main
 
      visitstate = visitdetectinput(blocking, -1)
 
-     !mvm: doing this a little different than the example code
+     !VisIt: doing this a little different than the example code
      if (visitstate == 0) then  
-        !mvm: simulation needs to be separated out so that
-        !mvm: the VisIt callbacks can call it directly
+        !VisIt: simulation needs to be separated out so that
+        !VisIt: the VisIt callbacks can call it directly
         call simulate_one_timestep()
-     elseif (visitstate == 1) then !mvm: connect to VisIt
+     elseif (visitstate == 1) then !VisIt: connect to VisIt
         runflag = 0
         result = visitattemptconnection()
         if (result == 1) then
@@ -350,7 +350,7 @@ PROGRAM main
         else
            print *, 'VisIt did not connect!'
         end if
-     elseif (visitstate == 2) then !mvm: disconnect from VisIt
+     elseif (visitstate == 2) then !VisIt: disconnect from VisIt
         runflag = 0
         if (visitprocessenginecommand() == 0) then
            result = visitdisconnect()
@@ -362,7 +362,7 @@ PROGRAM main
      omeg=omeg_d
      temp=temp+1
      write(name_config,'(a,i0,a)') 'omega',temp,'.datbin'
-  END DO !mvm : end sim loop
+  END DO !VisIt : end sim loop
 
   CALL system_clock(finish,count_rate)
   PRINT*,'Program took ',REAL(finish-start)/REAL(count_rate),&
@@ -410,15 +410,15 @@ PROGRAM main
   PRINT *,'Program execution complete'
 END PROGRAM main
 
-!mvm: needs external scope so visitcallbacks can use it
+!VisIt: needs external scope so visitcallbacks can use it
 subroutine simulate_one_timestep()
   use globals
   use cufft
   implicit none
-  !mvm: common block visible to visitgetmesh callback
-  !mvm: note: nameclashing?
+  !VisIt: common block visible to visitgetmesh callback
+  !VisIt: note: nameclashing?
   integer :: numx = 1024, numy = 1024
-  real, dimension(:) :: rmx(1024), rmy(1024)  !mvm ~ x_d, y_d 
+  real, dimension(:) :: rmx(1024), rmy(1024)  !VisIt ~ x_d, y_d 
   integer, dimension(3) :: rmdims
   integer :: rmndims
   real, dimension(:,:) :: nodal(1024,1024)
@@ -511,6 +511,6 @@ subroutine simulate_one_timestep()
            END DO
         END DO
         omegcheck_d=omeg_d
-     END DO !mvm: end while
-  END DO ! mvm: end plotgap loop
+     END DO !VisIt: end while
+  END DO ! VisIt: end plotgap loop
 end subroutine simulate_one_timestep
