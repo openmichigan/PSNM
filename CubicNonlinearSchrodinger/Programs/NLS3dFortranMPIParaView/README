@@ -1,0 +1,7 @@
+ParaView CoProcessing version of:
+https://math.lsi.umich.edu/ParallelSpectral/CubicNonlinearSchrodinger/Programs/NLS3dFortranMPI
+
+Uses the paraview/3.14.1 module.
+Rename one of pipeline_* to pipeline.py to run. Pipeline file needs to be in the same directory as the executable.
+
+Output interpreted as cellular data by coprocessor.
