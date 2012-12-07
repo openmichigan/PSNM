@@ -1,0 +1,47 @@
+# Makefile for Nautilus
+# Assumes: module load fftw/3.3.0
+# Assumes: module load PE-intel
+FC = ifort 
+CXX = icpc
+
+DEBUG = -g
+WARNINGS = 
+FCFLAGS = $(WARNINGS) $(DEBUG) -O0
+CXXFLAGS = $(DEBUG)
+
+DECOMPDIR = /nics/b/home/mvanmoer/projects/muite/2decomp_fft
+
+PVDIR = /sw/analysis/paraview/3.14.1/sles11.1_intel11.1.038
+PVSRCDIR = $(PVDIR)/ParaView-3.14.1-Source
+PVBUILDDIR = $(PVDIR)/build
+PVINCDIRS = -I$(PVSRCDIR)/CoProcessing/Adaptors/FortranAdaptors -I$(PVBUILDDIR)/CoProcessing/Adaptors/FortranAdaptors -I$(PVSRCDIR)/VTK/Filtering -I$(PVSRCDIR)/VTK/Common -I$(PVBUILDDIR)/VTK -I$(PVSRCDIR)/CoProcessing/CoProcessor
+
+INCDIRS = $(PVINCDIRS) -I$(DECOMPDIR)/include
+LIBDIRS = -L$(PVDIR)/lib/paraview-3.14 -L$(DECOMPDIR)/lib
+LIBS =  -lvtkCoProcessorPythonD -l2decomp_fft -lfftw3 -lmpi -lstdc++
+
+BIN = Kg
+all: $(BIN)
+
+FortranAdaptorAPI.o: $(PVSRCDIR)/CoProcessing/Adaptors/FortranAdaptors/FortranAdaptorAPI.cxx
+	$(CXX) -c $(CXXFLAGS) $(INCDIRS) -o $@ $<
+
+VTKCellBasedDataSet.o: VTKCellBasedDataSet.cxx
+	$(CXX) -c $(CXXFLAGS) $(INCDIRS) -o $@ $<
+
+KGadaptor.o: KGadaptor.f90 VTKCellBasedDataSet.o
+	$(FC) -c $(FCFLAGS) $(INCDIRS) -o $@ $^
+
+%.o: %.f90
+	$(FC) -c $< -o $@ $(LIBDIRS) $(INCDIRS) $(LIBS)
+
+OBJECTS = FortranAdaptorAPI.o VTKCellBasedDataSet.o KGadaptor.o enercalc.o \
+	initialdata.o savedata.o storeold.o getgrid.o readinputfile.o saveresults.o
+
+$(BIN): KgSemiImp3d.f90 $(OBJECTS)
+	$(FC) -o $@ $^ $(FCFLAGS) $(INCDIRS) $(LIBDIRS) $(LIBS) $(OBJECTS)
+
+clean:
+	$(RM) *.o
+	$(RM) *.mod
+	$(RM) $(BIN)

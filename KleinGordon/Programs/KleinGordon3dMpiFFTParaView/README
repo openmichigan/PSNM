@@ -1,0 +1,8 @@
+ParaView CoProcessing version of:
+https://math.lsi.umich.edu/ParallelSpectral/KleinGordon/Programs/KleinGordon3dMpiFFT
+
+Rename one of pipeline_* to pipeline.py to run. The pipeline file needs to be in the same directory as the executable.
+
+Data interpreted as cellular by coprocessor.
+
+Tested on Nautilus with the paraview/3.14.1 module.
