@@ -17,11 +17,12 @@ module NSadaptor_module
 contains
   subroutine NSadaptor3D(nx, ny, nz, xst, xen, yst, yen, zst, zen, &
                                      step, time, omegax, omegay, omegaz)
-    ! nx, ny, nz -- grid dimensions
-    !               used for setting whole extent
-    ! step       -- current simulation time step
-    ! time       -- current simulation time
-    ! omega*      -- scalar arrays for the current time step
+    ! nx, ny, nz     -- grid dimensions of entire mesh
+    !                   used for setting whole extent
+    ! xst, xen, etc. -- extents of current subdomain pencil
+    ! step           -- current simulation time step
+    ! time           -- current simulation time
+    ! omega*         -- scalar arrays for the current time step
     integer, intent(in) :: nx, ny, nz, xst, xen, yst, yen, zst, zen, step
     real(kind=8), intent(in) :: time
     real(kind=8), dimension(:,:,:), intent (in) :: omegax, omegay, omegaz
@@ -39,13 +40,13 @@ contains
        
        if (flag /= 0) then
           ! grid needed
-          ! defined in adaptor.cxx
+          ! defined in VTKCellBasedDataSet.cxx
           ! takes the size of the entire grid, and the extents of the
           ! sub grid.
           call createcpimagedata(nx, ny, nz, xst, xen, yst, yen, zst, zen)
        end if
           
-       ! defined in adaptor.cxx
+       ! defined in VTKCellBasedDataSet.cxx 
        ! call for each field of interest. Be sure to null-terminate the
        ! string for C++!
        call addfield(omegax, "realtempx"//char(0))
