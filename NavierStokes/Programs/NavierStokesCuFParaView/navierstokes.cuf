@@ -151,7 +151,7 @@ PROGRAM main
   use precision
   use cufft
   
-  ! mvm:
+  ! coprocessing:
   use ns2dcnadaptor
 
   ! declare variables
@@ -167,7 +167,7 @@ PROGRAM main
   REAL(fp_kind), PARAMETER              ::      ReInv=1.0d0/REAL(Re,kind(0d0))
   REAL(fp_kind), PARAMETER              ::      tol=0.1d0**10
   
-  !mvm: temp is used as an int, runtime crashes on 
+  !coprocessing: temp is used as an int, runtime crashes on 
   ! floating temp used in write format string on line 376
   !REAL(fp_kind)                                        ::  scalemodes,chg,temp=10000000
   real(fp_kind) :: scalemodes, chg
@@ -300,11 +300,11 @@ PROGRAM main
   PRINT *,'Got initial data, starting timestepping'     
   CALL system_clock(start,count_rate)
 
-  ! mvm: simulation loop
-  ! mvm: before entering, initialze the ParaView coprocessor
-  ! mvm: this is from FortranAdaptorAPI.cxx
-  ! mvm: it takes the name of the pipeline script you created
-  ! mvm: in the ParaView client and the name's length in chars
+  ! coprocessing: simulation loop
+  ! coprocessing: before entering, initialze the ParaView coprocessor
+  ! coprocessing: this is from FortranAdaptorAPI.cxx
+  ! coprocessing: it takes the name of the pipeline script you created
+  ! coprocessing: in the ParaView client and the name's length in chars
   call coprocessorinitialize("pipeline.py", 11 )
   DO t=1,nplots
      DO n=1,plotgap
@@ -393,7 +393,7 @@ PROGRAM main
      !write(name_config,'(a,i0,a)') 'omega',temp,'.datbin'
      !INQUIRE(iolength=iol) omeg(1,1)
      !OPEN(unit=11,FILE=name_config,form="unformatted", access="direct",recl=iol) 
-     !count = 1 !mvm - there's an intrinsic array function this shadows
+     !count = 1 !coprocessing - there's an intrinsic array function this shadows
      !DO j=1,Ny
      !   DO i=1,Nx
      !      WRITE(11,rec=count) omeg(i,j)*scalemodes
@@ -402,13 +402,13 @@ PROGRAM main
      !END DO
      !CLOSE(11)
 
-     ! mvm: do the coprocessing at the end of the sim loop
+     ! coprocessing: do the coprocessing at the end of the sim loop
      ! grid dims, time step, time, scalar array
      call navierStokesCoprocessor(Nx, Ny, 1, t, t*dt  ,omeg)  
  
   END DO
  
-  ! mvm: clean up
+  ! coprocessing: clean up
   call coprocessorfinalize()
 
  CALL system_clock(finish,count_rate)
