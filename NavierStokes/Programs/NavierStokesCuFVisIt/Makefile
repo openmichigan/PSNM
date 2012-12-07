@@ -1,0 +1,48 @@
+#
+#  Copyright 2012 NVIDIA Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+F90       = pgf90
+OMPFLAGS = -O3 -Mcuda -Minfo 
+CUDA_PATH = /usr/local/pgi/linux86-64/2012/cuda/4.1
+CCFLAGS  = -I$(CUDA_PATH)/include -L$(CUDA_PATH)/lib64 -lcudart -lcufft -Minline
+#FCFLAGS = -g77libs -m
+
+VISITDIR = /usr/apps/vis/VisIt/visit2.5.0/src
+SIMLIBDIR = -L$(VISITDIR)/lib
+SIMINCDIR = -I$(VISITDIR)/sim/V2/lib
+
+#mvm: order matters!
+SIMLIBS = -lsimV2f -lsimV2 
+LIBS = -ldl $(SIMLIBS)
+
+
+BIN =  ns2dcn
+
+all: $(BIN)
+
+simulationexamplev2.o: simulationexamplev2.f
+	$(F90) -c $(SIMINCDIR) -o $@ $< $(LIBS)
+
+visitcallbacks.o: visitcallbacks.f90
+	$(F90) -c $(SIMINCDIR) -o $@ $< $(LIBS)
+
+ns2dcn: navierstokes.cuf visitcallbacks.o simulationexamplev2.o
+	$(F90) $(OMPFLAGS) $(CCFLAGS) $(FCFLAGS) $(SIMINCDIR) $(SIMLIBDIR) -o $@ $^ $(LIBS)
+
+clean:
+	$(RM) *.o
+	$(RM) *.mod
+	$(RM) $(BIN)

@@ -1,0 +1,17 @@
+#!/bin/csh
+#PBS -l walltime=01:30:00
+#PBS -l nodes=1:ppn=16
+#PBS -V
+#PBS -A ghr
+#PBS -N cuf-test
+#PBS -m abe
+#PBS -M mvanmoer@illinois.edu
+#PBS -q normal
+
+module load paraview/3.14.1-OSMesa
+unlimit
+set run_dir = $HOME/projects/muite/CuF
+cd $run_dir
+time ./ns2dcn
+
+exit
