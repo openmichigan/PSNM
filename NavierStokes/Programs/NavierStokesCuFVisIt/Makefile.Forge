@@ -18,13 +18,12 @@ F90       = pgf90
 OMPFLAGS = -O3 -Mcuda -Minfo 
 CUDA_PATH = /usr/local/pgi/linux86-64/2012/cuda/4.1
 CCFLAGS  = -I$(CUDA_PATH)/include -L$(CUDA_PATH)/lib64 -lcudart -lcufft -Minline
-#FCFLAGS = -g77libs -m
 
 VISITDIR = /usr/apps/vis/VisIt/visit2.5.0/src
 SIMLIBDIR = -L$(VISITDIR)/lib
 SIMINCDIR = -I$(VISITDIR)/sim/V2/lib
 
-#mvm: order matters!
+#NOTE: order matters!
 SIMLIBS = -lsimV2f -lsimV2 
 LIBS = -ldl $(SIMLIBS)
 
