@@ -19,12 +19,13 @@ module NSadaptor_module
 contains
   subroutine NSadaptor1D(nx, ny, nz, xst, xen, yst, yen, zst, zen, &
                                      step, time, omegax, omegay, omegaz)
-    ! nx, ny, nz -- grid dimensions
-    !               used for setting whole extent
-    ! step       -- current simulation time step
-    ! time       -- current simulation time
-    ! omega      -- scalar array for the current time step
-    ! decomp     -- decomp structure containing per process extents
+    ! nx, ny, nz     -- grid dimensions or entire mesh
+    !                   used for setting whole extent
+    ! xst, xen, etc. -- extents of current subdomain pencil
+    ! step           -- current simulation time step
+    ! time           -- current simulation time
+    ! omega*          -- scalar array for the current time step
+    ! flag           -- receives status from API calls
     integer, intent(in) :: nx, ny, nz, xst, xen, yst, yen, zst, zen, step
     real(kind=8), intent(in) :: time
     real(kind=8), dimension(:), intent (in) :: omegax, omegay, omegaz
@@ -48,7 +49,7 @@ contains
           call createcpimagedata(nx, ny, nz, xst, xen, yst, yen, zst, zen)
        end if
           
-       ! defined in NSadaptor.cxx
+       ! defined in VTKPointBasedDataSet.cxx
        ! remember to null-terminate strings for C/C++
        call addfield(omegax, "realtempx"//char(0));
        call addfield(omegay, "realtempy"//char(0));
