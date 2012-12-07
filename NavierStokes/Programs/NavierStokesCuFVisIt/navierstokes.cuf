@@ -321,14 +321,14 @@ PROGRAM main
        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN, &
        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
 
-  !VisIt: visit 
+  !VisIt: libsim specific flag
   runflag = 1 
 
   !VisIt: Example code uses infinite whiles instead of 
   !VisIt: explicit number of timesteps.
   DO t=1,nplots
 
-     !VisIt: visit
+     !VisIt: check for block
      if (runflag == 1) then
         blocking = 0
      else
