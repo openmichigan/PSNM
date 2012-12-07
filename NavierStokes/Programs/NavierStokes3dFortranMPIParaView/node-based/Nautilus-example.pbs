@@ -1,0 +1,26 @@
+# Example job submission file for Nautilus.
+
+#PBS -N copro_test
+#PBS -j oe
+#PBS -m abe
+
+# Your email goes here
+#PBS -M 
+
+#PBS -l ncpus=8
+#PBS -l mem=16GB
+#PBS -l walltime=00:30:00
+#PBS -A TG-CTS110010
+
+module load paraview/3.14.1
+
+# if saving images, can save to $HOME
+#cd $PBS_O_WORKDIR
+
+# if saving vtis, will probably exceed $HOME quota, save to scratch
+cd $SCRATCHDIR
+ulimit -s unlimited
+
+# Replace path to binary and uncomment line
+#mpiexec /path/to/binary 
+exit
