@@ -1,7 +1,7 @@
-! mvm: Functions that have to be defined even if not used
-! mvm: libsimV2 and libsimV2f are expecting these to be
-! mvm: visible, so easier not to put inside a module.
-! mvm: based on examples at wiki
+! VisIt: Functions that have to be defined even if not used
+! VisIt: libsimV2 and libsimV2f are expecting these to be
+! VisIt: visible, so easier not to put inside a module.
+! VisIt: based on examples at wiki
   subroutine visitcommandcallback(cmd, lcmd, args, largs)
     implicit none
     include "visitfortransimV2interface.inc"
@@ -15,8 +15,8 @@
     if (visitstrcmp(cmd, lcmd, "halt", 4) == 0) then
         runflag = 0
     elseif (visitstrcmp(cmd, lcmd, "step", 4) == 0) then
-        !mvm: this is the call that forces the simulation to
-        !mvm: be in an external function
+        !VisIt: this is the call that forces the simulation to
+        !VisIt: be in an external function
         call simulate_one_timestep()
     elseif (visitstrcmp(cmd, lcmd, "run", 3) == 0) then
         runflag = 1
@@ -110,8 +110,8 @@
     integer :: domain, lname, handle
     include "visitfortransimV2interface.inc"
     ! RECTMESH common block
-    !mvm: This common block is also used by
-    !mvm: simulate_one_timestep()
+    !VisIt: This common block is also used by
+    !VisIt: simulate_one_timestep()
     integer, parameter :: nx = 1024, ny = 1024
     real, dimension(nx) :: rmx
     real, dimension(ny) :: rmy
