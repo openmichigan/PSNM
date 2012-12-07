@@ -4,3 +4,5 @@ https://math.lsi.umich.edu/ParallelSpectral/NavierStokes/Programs/NavierStokes3d
 Tested on Nautilus with the paraview/3.14.1 module.
 The data is reinterpreted as cellular by the CoProcessor.
 Rename one of the python scripts to pipeline.py to run. Pipeline file needs to be in the same directory as the executable.
+
+pipeline_vtis.py outputs VTK XML Image Data files. These are RAW binary files in an XML wrapper. pipeline_images.py outputs .pngs.
