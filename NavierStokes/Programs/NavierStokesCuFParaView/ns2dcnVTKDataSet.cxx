@@ -38,8 +38,7 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz)
   // assuming dimZ == 1 for now
   Grid->SetDimensions(*nx, *ny, *nz);
   
-  // Setting the Origin and Spacing is also an option, but if the spacing is the same in each direction
-  // probably not an issue. 
+  // Setting the Origin and Spacing are also options.
 
   // Name should be consistent between here, Fortran and Python client script.
   ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input")->SetGrid(Grid);
@@ -54,8 +53,6 @@ extern "C" void addfield_(double* scalars)
 {
   vtkCPInputDataDescription *idd = ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input");
 
-  // mvm: do I need this? Is this here because the client pipeline
-  // grid might have been a different resolution?
   vtkImageData* Image = vtkImageData::SafeDownCast(idd->GetGrid());
 
   if (!Image) {
@@ -63,17 +60,12 @@ extern "C" void addfield_(double* scalars)
     return;
   }
 
-  // vtkIdType NumberOfNodes = Image->GetNumberOfPoints();
-
-  // assuming a single scalar, omega.
-  // additional scalars or vectors would have similar setup
-  // is omega being 2D going to be a problem...?
 
   // field name must match that in the fortran code.
   if (idd->IsFieldNeeded("omeg")) {
     vtkDoubleArray* omega = vtkDoubleArray::New();
     omega->SetName("omeg");
-    omega->SetArray(scalars, Image->GetNumberOfPoints(), 1); // mvm 1 or 0? "save"?
+    omega->SetArray(scalars, Image->GetNumberOfPoints(), 1); 
     Image->GetPointData()->AddArray(omega);
     omega->Delete();
   }
