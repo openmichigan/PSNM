@@ -10,7 +10,9 @@
 #PBS -l ncpus=8
 #PBS -l mem=16GB
 #PBS -l walltime=00:15:00
-#PBS -A TG-CTS110010
+
+# Your charging account goes here
+#PBS -A 
 
 module load paraview/3.14.1
 
