@@ -188,14 +188,9 @@ PROGRAM main
   END DO
 
   ! write out using 2DECOMP&FFT MPI-IO routines
-  ! mvm: why is this trying to assign a string to a character?
-  ! mvm: should be name_config(1:) ?
-  ! name_config(1)='./data/u'
   name_config(1:) = './data/u'
   plotnum=0
   WRITE(numberfile,'(i0)') 10000000+plotnum
-  ! mvm: name_config = name_config(1)//numberfile ?
-  ! name_config=nameconfig(1)//numberfile
   name_config = name_config//numberfile
   ind=index(numberfile,' ') -1
   name_config=name_config//'.datbin'
@@ -249,11 +244,9 @@ PROGRAM main
      IF (mod(n,plotgap)==0) THEN
         time(1+n/plotgap)=n*dt
         PRINT *,'time',n*dt
-        ! mvm: (1:) again?
         name_config(1:)='./data/u'
         plotnum=plotnum+1
         WRITE(numberfile,'(i0)') 10000000+plotnum
-        ! mvm: nameconfig error again?
         name_config=name_config//numberfile
         ind=index(numberfile,' ') -1
         name_config=name_config//'.datbin'
