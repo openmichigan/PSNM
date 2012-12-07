@@ -252,7 +252,6 @@ PROGRAM Kg
 !       CALL savedata(Nx,Ny,Nz,plotnum,name_config,savearray,decomp)
      END IF
      !coprocessing:
-!    print *, "n*dt+starttime: ", n*dt+starttime
      call KGadaptor(Nx, Ny, Nz, decomp%xst(1), decomp%xen(1), &
                   decomp%xst(2), decomp%xen(2), decomp%xst(3), decomp%xen(3), &
                   n, n*dt+starttime, savearray)      
