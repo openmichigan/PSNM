@@ -1,0 +1,43 @@
+# Nautilus 
+# Assumes PE-intel, since ParaView was built with Intel.
+CXX = icpc
+FC = ifort
+
+DEBUG = -g
+WARNINGS =
+FCFLAGS = $(WARNINGS) $(DEBUG)
+CXXFLAGS = $(DEBUG)
+
+DECOMPDIR = /nics/b/home/mvanmoer/projects/muite/2decomp_fft
+
+PVDIR = /sw/analysis/paraview/3.14.1/sles11.1_intel11.1.038
+PVSRCDIR = $(PVDIR)/ParaView-3.14.1-Source
+PVBUILDDIR = $(PVDIR)/build
+PVINCDIRS = -I$(PVSRCDIR)/CoProcessing/Adaptors/FortranAdaptors -I$(PVBUILDDIR)/CoProcessing/Adaptors/FortranAdaptors -I$(PVSRCDIR)/VTK/Filtering -I$(PVSRCDIR)/VTK/Common -I$(PVBUILDDIR)/VTK -I$(PVSRCDIR)/CoProcessing/CoProcessor
+
+INCDIRS = $(PVINCDIRS) -I$(DECOMPDIR)/include
+
+LIBDIRS = -L$(PVDIR)/lib/paraview-3.14 -L$(DECOMPDIR)/lib
+LIBS = -lvtkCoProcessorPythonD -l2decomp_fft -lmpi -lstdc++
+
+BIN = ns3d-pvcp-nodes
+
+all: $(BIN)
+
+FortranAdaptorAPI.o: $(PVSRCDIR)/CoProcessing/Adaptors/FortranAdaptors/FortranAdaptorAPI.cxx
+	$(CXX) -c $(CXXFLAGS) $(INCDIRS) -o $@ $<
+
+VTKPointBasedDataSet.o: VTKPointBasedDataSet.cxx
+	$(CXX) -c $(CXXFLAGS) $(INCDIRS) -o $@ $<
+
+NSadaptor.o: NSadaptor.f90 VTKPointBasedDataSet.o
+	$(FC) -c $(FCFLAGS) $(INCDIRS) -c -o $@ $^
+
+$(BIN): NavierStokes3DfftIMR.f90 NSadaptor.o FortranAdaptorAPI.o VTKPointBasedDataSet.o
+	$(FC) -Wl,-rpath $(PVDIR)/lib/paraview-3.14 $(FCFLAGS) $(INCDIRS) $(LIBDIRS)  -o $@ $^ $(LIBS)
+
+
+clean:
+	$(RM) *.o
+	$(RM) *.mod
+	$(RM) $(BIN)
