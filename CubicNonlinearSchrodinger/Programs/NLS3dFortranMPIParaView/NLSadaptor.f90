@@ -18,12 +18,13 @@ module NLSadaptor_module
 contains
   subroutine NLSadaptor3D(nx, ny, nz, xst, xen, yst, yen, zst, zen, &
                                      step, time, a)
-    ! nx, ny, nz -- grid dimensions
-    !               used for setting whole extent
-    ! xst, xen, etc -- extents of current subdomain
-    ! step       -- current simulation time step
-    ! time       -- current simulation time
-    ! a          -- scalar array for the current time step
+    ! nx, ny, nz     -- grid dimensions of entire mesh
+    !                   used for setting whole extent
+    ! xst, xen, etc. -- extents of current subdomain pencil
+    ! step           -- current simulation time step
+    ! time           -- current simulation time
+    ! a              -- scalar array for the current time step
+    ! flag           -- receives status from API calls
     integer, intent(in) :: nx, ny, nz, xst, xen, yst, yen, zst, zen, step
     real(kind=8), intent(in) :: time
     complex(kind=8), dimension(:,:,:), intent (in) :: a 
@@ -32,15 +33,12 @@ contains
     flag = 0
     ! check if processing this time step
     ! defined in FortranAdaptorAPI.h
-!   print *, "requestdatadescription"
-!   print *,"step, time, flag: ", step, time, flag
     call requestdatadescription(step, time, flag)
         
     if (flag /= 0) then
        ! processing requested
        ! check if need to create grid
        ! defined in FortranAdaptorAPI.h
-!      print *, "needtocreategrid"
        call needtocreategrid(flag)
        
        if (flag /= 0) then
@@ -48,19 +46,15 @@ contains
           ! defined in adaptor.cxx
           ! takes the size of the entire grid, and the extents of the
           ! sub grid.
-!         print *, "createcpimagedata"
           call createcpimagedata(nx, ny, nz, xst, xen, yst, yen, zst, zen)
        end if
           
        ! defined in adaptor.cxx
-       ! call for each field of interest. Be sure to null-terminate the
+       ! Be sure to null-terminate the
        ! string for C++!
-!      print *, "addfield"
-
        call addfield(a, "u_complex"//char(0))
 
        ! defined in FortranAdaptorAPI.h
-!      print *,"calling coprocess()"
        call coprocess()
     end if
     
