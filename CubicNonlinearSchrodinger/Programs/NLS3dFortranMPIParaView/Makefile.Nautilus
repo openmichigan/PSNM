@@ -11,6 +11,7 @@ WARNINGS =
 FCFLAGS = $(WARNINGS) $(DEBUG) -O0
 CXXFLAGS = $(DEBUG)
 
+# Be sure to change ########################################
 DECOMPDIR = /nics/b/home/mvanmoer/projects/muite/2decomp_fft
 
 PVDIR = /sw/analysis/paraview/3.14.1/sles11.1_intel11.1.038
