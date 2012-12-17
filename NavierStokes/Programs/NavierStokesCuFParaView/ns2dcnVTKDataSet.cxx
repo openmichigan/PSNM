@@ -15,6 +15,7 @@
 
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
+#include "vtkSmartPointer.h"
 
 // ParaView-3.14.1-Source/VTK/Filtering/vtkImageData.h
 #include "vtkImageData.h"
@@ -33,7 +34,7 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz)
 
   // The simulation grid is a 2-dimensional topologically and geometrically 
   // regular grid. In VTK/ParaView, this is considered an image data set.
-  vtkImageData* Grid = vtkImageData::New();
+  vtkSmartPointer<vtkImageData> Grid = vtkSmartPointer<vtkImageData>::New();
   
   // assuming dimZ == 1 for now
   Grid->SetDimensions(*nx, *ny, *nz);
