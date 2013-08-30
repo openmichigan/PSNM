@@ -15,6 +15,7 @@
 
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
+#include "vtkSmartPointer.h"
 
 // ParaView-3.14.1-Source/VTK/Filtering/vtkImageData.h
 #include "vtkImageData.h"
@@ -33,7 +34,7 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz)
 
   // The simulation grid is a 2-dimensional topologically and geometrically 
   // regular grid. In VTK/ParaView, this is considered an image data set.
-  vtkImageData* Grid = vtkImageData::New();
+  vtkSmartPointer<vtkImageData> Grid = vtkSmartPointer<vtkImageData>::New();
   
   // assuming dimZ == 1 for now
   Grid->SetDimensions(*nx, *ny, *nz);
@@ -51,10 +52,9 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz)
 // by hand name mangling for fortran
 extern "C" void addfield_(double* scalars)
 {
-  vtkCPInputDataDescription *idd = ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input");
-
-  vtkImageData* Image = vtkImageData::SafeDownCast(idd->GetGrid());
-
+  vtkSmartPointer<vtkCPInputDescription> idd = ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input");
+  vtkSmartPointer<vtkImageData> Image = vtkImageData::SafeDownCast(idd->GetGrid());
+  
   if (!Image) {
     vtkGenericWarningMacro("No adaptor grid to attach field data to.");
     return;
@@ -63,10 +63,9 @@ extern "C" void addfield_(double* scalars)
 
   // field name must match that in the fortran code.
   if (idd->IsFieldNeeded("omeg")) {
-    vtkDoubleArray* omega = vtkDoubleArray::New();
+    vtkSmartPointer<vtkDoubleArray> omega = vtkSmartPointer<vtkDoubleArray>::New();
     omega->SetName("omeg");
     omega->SetArray(scalars, Image->GetNumberOfPoints(), 1); 
     Image->GetPointData()->AddArray(omega);
-    omega->Delete();
   }
 }
