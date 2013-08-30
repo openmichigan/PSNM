@@ -1,0 +1,1 @@
+Example of using the new coprocessing API from ParaView 3.98+/Catalyst 1.0-alpha+. This was tested on Beacon@NICS in offload mode.
