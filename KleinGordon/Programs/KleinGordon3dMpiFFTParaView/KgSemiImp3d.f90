@@ -183,8 +183,7 @@ PROGRAM Kg
   plotnum=1       
   name_config = 'data/u' 
   savearray=REAL(u)
-! CALL savedata(Nx,Ny,Nz,plotnum,name_config,savearray,decomp)
-
+  !CALL savedata(Nx,Ny,Nz,plotnum,name_config,savearray,decomp)
   CALL decomp_2d_fft_3d(u,v,DECOMP_2D_FFT_FORWARD)
   CALL decomp_2d_fft_3d(uold,vold,DECOMP_2D_FFT_FORWARD)
 
@@ -249,10 +248,10 @@ PROGRAM Kg
              kx,ky,kz,nonlin,nonlinhat,&
              vnew,v,unew,u,decomp)
         savearray=REAL(unew,kind(0d0))
-!       CALL savedata(Nx,Ny,Nz,plotnum,name_config,savearray,decomp)
+  !      CALL savedata(Nx,Ny,Nz,plotnum,name_config,savearray,decomp)
      END IF
      !coprocessing:
-     call KGadaptor(Nx, Ny, Nz, decomp%xst(1), decomp%xen(1), &
+    call KGadaptor(Nx, Ny, Nz, decomp%xst(1), decomp%xen(1), &
                   decomp%xst(2), decomp%xen(2), decomp%xst(3), decomp%xen(3), &
                   n, n*dt+starttime, savearray)      
 
