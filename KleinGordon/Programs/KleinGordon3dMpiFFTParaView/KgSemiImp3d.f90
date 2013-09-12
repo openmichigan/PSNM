@@ -205,7 +205,7 @@ PROGRAM Kg
   CALL system_clock(start,count_rate)     
 
   !coprocessing:
-  call coprocessorinitialize("pipeline.py", 11)
+  call coprocessorinitializewithpython("pipeline.py", 11)
 
   DO n=1,Nt                                       
      DO k=decomp%xst(3),decomp%xen(3)
