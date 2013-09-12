@@ -1,11 +1,10 @@
-// Adaptor for getting fortran simulation code into ParaView CoProcessor.
-// Based on the PhastaAdaptor sample in the ParaView distribution.
-// ParaView-3.14.1-Source/CoProcessing/Adaptors/FortranAdaptors/PhastaAdaptor/PhastaAdaptor.cxx
+// 20130912 Mark Van Moer, NCSA
+// Adaptor for ParaView/Catalyst Coprocessing.
+// Interfaces with a Fortran glue module to get data from a Fortran simulation.
+// This works with the ParaView 4.0.1/Catalyst 1.0-alpha API.
 
-
-// Fortran specific header
-// ParaView-3.14.1-Source/CoProcessing/Adaptors/FortranAdaptors/
-#include "FortranAdaptorAPI.h" 
+// Fortran specific header, yes, even though it says Python.
+#include "vtkCPPythonAdaptorAPI.h" 
 
 // CoProcessor specific headers
 // Routines that take the place of VTK dataset object creation.
@@ -33,7 +32,7 @@
 extern "C" void createcpimagedata_(int* nx, int* ny, int* nz, int* xst, int* xen,
 	int* yst, int* yen, int* zst, int* zen)
 {
-  if (!ParaViewCoProcessing::GetCoProcessorData()) {
+  if (!vtkCPPythonAdaptorAPI::GetCoProcessorData()) {
     vtkGenericWarningMacro("Unable to access CoProcessorData.");
     return;
   }
@@ -48,8 +47,8 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz, int* xst, int* xen
   // sense if using different sized meshes between setting up the pipeline and running
   // the simulation. Origin can often be ignored.
   img->SetSpacing( 1.0 / *nx, 1.0 / *ny, 1.0 / *nz); // considering passing in as args. 
-  ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input")->SetGrid(img);
-  ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input")->SetWholeExtent(0, *nx, 0, *ny, 0, *nz);
+  vtkCPPythonAdaptorAPI::GetCoProcessorData()->GetInputDescriptionByName("input")->SetGrid(img);
+  vtkCPPythonAdaptorAPI::GetCoProcessorData()->GetInputDescriptionByName("input")->SetWholeExtent(0, *nx, 0, *ny, 0, *nz);
 }
 
 // Add field to the data container.
@@ -63,7 +62,7 @@ extern "C" void createcpimagedata_(int* nx, int* ny, int* nz, int* xst, int* xen
 extern "C" void addfield_(double* a, char* name)
 {
 
-  vtkSmartPointer<vtkCPInputDataDescription> idd = ParaViewCoProcessing::GetCoProcessorData()->GetInputDescriptionByName("input");
+  vtkSmartPointer<vtkCPInputDataDescription> idd = vtkCPPythonAdaptorAPI::GetCoProcessorData()->GetInputDescriptionByName("input");
   vtkSmartPointer<vtkImageData> img = vtkImageData::SafeDownCast(idd->GetGrid());
 
   if (!img) {
