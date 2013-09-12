@@ -8,3 +8,5 @@ pipeline_vtis.py outputs VTK XML Image Data files. These are RAW binary files wr
 Data interpreted as cellular by coprocessor.
 
 Tested on Nautilus with the paraview/3.14.1 module.
+
+20130912 - Tested on Beacon @ NICS in offload mode only (no MIC)
