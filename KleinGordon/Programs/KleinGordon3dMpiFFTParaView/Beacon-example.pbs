@@ -1,0 +1,33 @@
+# Example job submission file for Beacon.
+
+#PBS -N kg-copro-test
+#PBS -j oe
+#PBS -m abe
+
+# Your email goes here
+#PBS -M mvanmoer@illinois.edu
+
+
+#PBS -l nodes=1
+#PBS -l walltime=00:15:00
+
+# Your charging account goes here
+#PBS -A UT-BEACON-MUITE
+
+
+# if writing images, can write to $HOME
+echo "work dir is: " $PBS_O_WORKDIR
+cd $PBS_O_WORKDIR
+export inputfile=/nics/b/home/mvanmoer/projects/muite/Beacon/PSNM/KleinGordon/Programs/KleinGordon3dMpiFFTParaView/INPUTFILE
+
+# if writing data files, will exceed $HOME quota, write to scratch
+echo "files were written to: " $SCRATCHDIR
+#cd $SCRATCHDIR
+export LD_LIBRARY_PATH=/nics/b/home/mvanmoer/apps/Beacon/offload/Mesa/9.1/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/nics/b/home/mvanmoer/apps/ParaView/4.0.1/lib/paraview-4.0:$LD_LIBRARY_PATH
+ulimit -s unlimited
+
+# assumes there is a pipeline.py file in the same dir as executable.
+# Replace with path to binary and uncomment following line
+./Kg
+exit
