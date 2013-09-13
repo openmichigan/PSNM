@@ -1,0 +1,32 @@
+# Example job submission file for Beacon.
+
+#PBS -N kg-32-node-512-cores-nooutput
+#PBS -j oe
+#PBS -m abe
+
+# Your email goes here
+#PBS -M mvanmoer@illinois.edu
+
+
+#PBS -l nodes=32
+#PBS -l walltime=00:10:00
+
+# Your charging account goes here
+#PBS -A UT-BEACON-MUITE
+
+
+# if writing images, can write to $HOME
+echo "work dir is: " $PBS_O_WORKDIR
+cd $PBS_O_WORKDIR
+#export inputfile=/nics/b/home/mvanmoer/projects/muite/Beacon/PSNM/KleinGordon/Programs/KleinGordon3dMpiFFTParaView/INPUTFILE
+export inputfile=INPUTFILE.scaling
+
+export LD_LIBRARY_PATH=/nics/b/home/mvanmoer/apps/Beacon/offload/Mesa/9.1/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/nics/b/home/mvanmoer/apps/ParaView/4.0.1/lib/paraview-4.0:$LD_LIBRARY_PATH
+ulimit -s unlimited
+
+# assumes there is a pipeline.py file in the same dir as executable.
+# There are 2, 8 core cpus/node
+time micmpiexec -n 512 ./Kg
+
+exit
