@@ -57,8 +57,8 @@
 	! 2DECOMP&FFT	 -- Domain decomposition and Fast Fourier Library
 	!			(http://www.2decomp.org/index.html)
 	! MPI library
-	IMPLICIT NONE					 
 	USE decomp_2d
+	IMPLICIT NONE					 
 	INCLUDE 'mpif.h'
 	! Declare variables
 	INTEGER(KIND=4), INTENT(IN)							:: Nx,Ny,Nz
