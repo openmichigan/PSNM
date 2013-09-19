@@ -91,10 +91,10 @@
 	!			(http://www.2decomp.org/index.html)
 	! MPI library
 	PROGRAM Kg
-	IMPLICIT NONE					 	
 	USE decomp_2d
 	USE decomp_2d_fft
 	USE decomp_2d_io
+	IMPLICIT NONE					 	
 	INCLUDE 'mpif.h'
 	! Declare variables
 	INTEGER(kind=4)				:: Nx, Ny, Nz, Nt, plotgap	
