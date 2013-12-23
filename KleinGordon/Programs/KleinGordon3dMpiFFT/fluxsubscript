@@ -8,6 +8,19 @@
 #PBS -m abe
 #PBS -V
 #
+#
+
+# Go to location of executable
 cd /nobackup/muite/KG3D
+
+# The export command below assumes that the inputfile is in the same location as the executable.
+# For best performance, the executable should be in the fast large file system. 
+export inputfile=INPUTFILE
+
+# make a directory where binary field data is output, the program may crash if this does not exist 
+# or is not created 
+mkdir data
+
+# run the code
 
 mpirun ./kg
