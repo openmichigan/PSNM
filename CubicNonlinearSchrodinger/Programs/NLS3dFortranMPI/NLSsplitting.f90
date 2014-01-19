@@ -33,12 +33,12 @@
 	!  j				= loop counter in y direction
 	!  k				= loop counter in z direction
 	!  n				= loop counter for timesteps direction	
-	!  allocatestatus	= error indicator during allocation
+	!  allocatestatus		= error indicator during allocation
 	!  start			= variable to record start time of program
 	!  finish			= variable to record end time of program
-	!  count_rate		= variable for clock count rate
+	!  count_rate			= variable for clock count rate
 	!  dt				= timestep
-	!  modescalereal	= Number to scale after backward FFT 
+	!  modescalereal		= Number to scale after backward FFT 
 	!  myid				= Process id
 	!  ierr				= error code
 	!  p_row			= number of rows for domain decomposition
@@ -47,12 +47,13 @@
 	!  disp				= displacement to start writing data from
 	!  ind				= index in array to write
 	!  plotnum			= number of plot to save
-	!  numberfile		= number of the file to be saved to disk
+	!  numberfile			= number of the file to be saved to disk
 	!  stat				= error indicator when reading inputfile
 	! .. Arrays ..
 	!  u 				= approximate solution
 	!  v				= Fourier transform of approximate solution
 	!  pot				= potential
+	!  uabs				= Absolute value of the field
 	! .. Vectors ..
 	!  kx				= fourier frequencies in x direction
 	!  ky				= fourier frequencies in y direction
@@ -106,6 +107,7 @@
 	COMPLEX(kind=8), DIMENSION(:), ALLOCATABLE	::  kx,ky,kz
 	REAL(kind=8),  	 DIMENSION(:), ALLOCATABLE	::  x,y,z 
 	COMPLEX(kind=8), DIMENSION(:,:,:), ALLOCATABLE	::  u,v,pot 
+	REAL(kind=8), 	 DIMENSION(:,:,:), ALLOCATABLE  ::  uabs
 	REAL(kind=8), 	 DIMENSION(:), ALLOCATABLE	::  time
 	INTEGER(KIND=4), DIMENSION(1:5)	::  intcomm
 	REAL(KIND=8), DIMENSION(1:5)	::  dpcomm
@@ -184,9 +186,12 @@
             pot(decomp%xst(1):decomp%xen(1),&
             	decomp%xst(2):decomp%xen(2),&
             	decomp%xst(3):decomp%xen(3)),&
-   			kx(1:Nx),ky(1:Ny),kz(1:Nz),&
-   			x(1:Nx),y(1:Ny),z(1:Nz),&
-   			time(1:1+Nt/plotgap),stat=AllocateStatus)	
+            uabs(decomp%xst(1):decomp%xen(1),&
+                decomp%xst(2):decomp%xen(2),&
+                decomp%xst(3):decomp%xen(3)),&
+   		kx(1:Nx),ky(1:Ny),kz(1:Nz),&
+   		x(1:Nx),y(1:Ny),z(1:Nz),&
+   		time(1:1+Nt/plotgap),stat=AllocateStatus)	
 	IF (AllocateStatus .ne. 0) STOP 
 
 	IF (myid.eq.0) THEN
@@ -237,6 +242,7 @@
 		DO j=decomp%xst(2),decomp%xen(2)
 			DO i=decomp%xst(1),decomp%xen(1)
 				u(i,j,k)=exp(-1.0d0*(x(i)**2 +y(j)**2+z(k)**2))
+				uabs(i,j,k)=abs(u(i,j,k))
 			END DO
 		END DO
 	END DO
@@ -249,7 +255,7 @@
 	nameconfig=nameconfig(1:ind)//numberfile
 	ind=index(nameconfig,' ') -1
 	nameconfig=nameconfig(1:ind)//'.datbin'
-	CALL decomp_2d_write_one(1,u,nameconfig)
+	CALL decomp_2d_write_one(1,uabs,nameconfig)
   
 	CALL decomp_2d_fft_3d(u,v,DECOMP_2D_FFT_FORWARD)
 	IF (myid.eq.0) THEN
@@ -298,6 +304,13 @@
 			END IF
 			CALL decomp_2d_fft_3d(v,u,DECOMP_2D_FFT_BACKWARD)
 			u=u*modescalereal
+        		DO k=decomp%xst(3),decomp%xen(3)
+                		DO j=decomp%xst(2),decomp%xen(2)
+                        		DO i=decomp%xst(1),decomp%xen(1)
+                                		uabs(i,j,k)=abs(u(i,j,k))
+                        		END DO
+                		END DO
+        		END DO
 			nameconfig='./data/u'
 			plotnum=plotnum+1
 			WRITE(numberfile,'(i0)') 10000000+plotnum
@@ -306,7 +319,7 @@
 			ind=index(nameconfig,' ') -1
 			nameconfig=nameconfig(1:ind)//'.datbin'
 			! write out using 2DECOMP&FFT MPI-IO routines
-			CALL decomp_2d_write_one(1,u,nameconfig)
+			CALL decomp_2d_write_one(1,uabs,nameconfig)
 		END IF
 	END DO		
 	IF (myid.eq.0) THEN
@@ -358,9 +371,9 @@
 	! clean up 
   	CALL decomp_2d_fft_finalize
   	CALL decomp_2d_finalize
- 	DEALLOCATE(u,v,pot,&
-   			kx,ky,kz,x,y,z,&
-   			time,stat=AllocateStatus)	
+ 	DEALLOCATE(u,v,pot,uabs,&
+   		kx,ky,kz,x,y,z,&
+   		time,stat=AllocateStatus)	
 	IF (AllocateStatus .ne. 0) STOP 
 	IF (myid.eq.0) THEN
 	   	PRINT *,'Program execution complete'
