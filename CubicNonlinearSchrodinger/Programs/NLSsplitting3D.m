@@ -1,6 +1,8 @@
 % A program to solve the 3D nonlinear Schr\"{o}dinger equation using a
 % splitting method 
 % updated by Abdullah Bargash , AbdulAziz Al-thiban
+% vol3d can be downloaded from http://www.mathworks.com/matlabcentral/fileexchange/22940-vol3d-v2
+%
 clear all; format compact; format short;
 set(0,'defaultaxesfontsize',30,'defaultaxeslinewidth',.7,...
     'defaultlinelinewidth',6,'defaultpatchlinewidth',3.7,...
