@@ -1,6 +1,6 @@
 % A program to solve the 3D nonlinear Schr\"{o}dinger equation using a
 % splitting method 
-
+% updated by Abdullah Bargash , AbdulAziz Al-thiban
 clear all; format compact; format short;
 set(0,'defaultaxesfontsize',30,'defaultaxeslinewidth',.7,...
     'defaultlinelinewidth',6,'defaultpatchlinewidth',3.7,...
@@ -32,16 +32,15 @@ kz = 1i*[0:Nz/2-1 0 -Nz/2+1:-1]'/Lz;        % wave vector
 % initial conditions
 u = exp(-(xx.^2+yy.^2+zz.^2));
 v=fftn(u);
-figure(1); clf; UP = abs(u).^2;
-p1 = patch(isosurface(x,y,z,UP,.0025),...
-    'FaceColor','yellow','EdgeColor','none');
-p2 = patch(isocaps(x,y,z,UP,.0025),...
-    'FaceColor','interp','EdgeColor','none');
-isonormals(UP,p1); lighting phong;
-xlabel('x'); ylabel('y'); zlabel('z'); 
+figure(1); clf;  UP = abs(u).^2;
+    H = vol3d('CData',UP,'texture','3D','XData',x,'YData',y,'ZData',z);
+    xlabel('x'); ylabel('y'); zlabel('z'); colorbar;
+    axis equal; axis square; view(3);   
+ 
+    xlabel('x'); ylabel('y'); zlabel('z'); 
 axis equal; axis square; view(3); drawnow;
 t=0; tdata(1)=t;
-
+   
 % mass
 ma = fftn(abs(u).^2);
 ma0 = ma(1,1,1);
@@ -59,24 +58,28 @@ for n =2:Nt+1
     t=(n-1)*dt;
     tdata(n)=t;
     if (mod(n,10)==0)
-        figure(1); clf; UP = abs(u).^2;
-        p1 = patch(isosurface(x,y,z,UP,.0025),...
-            'FaceColor','yellow','EdgeColor','none');
-        p2 = patch(isocaps(x,y,z,UP,.0025),...
-            'FaceColor','interp','EdgeColor','none');
-        isonormals(UP,p1); lighting phong;
+        
+    figure(1); clf;  UP = abs(u).^2;
+   
+    H = vol3d('CData',UP,'texture','3D','XData',x,'YData',y,'ZData',z);
+    xlabel('x'); ylabel('y'); zlabel('z'); colorbar;
+    axis equal; axis square; view(3); 
+    title(num2str(t));
+
+        
         xlabel('x'); ylabel('y'); zlabel('z'); 
         axis equal; axis square; view(3); drawnow;
         ma = fftn(abs(u).^2);
         ma = ma(1,1,1);  test = log10(abs(1-ma/ma0))
-     end
+         
+    end
+     
 end
-figure(4); clf; UP = abs(u).^2;
-p1 = patch(isosurface(x,y,z,UP,.0025),...
-    'FaceColor','yellow','EdgeColor','none');
-p2 = patch(isocaps(x,y,z,UP,.0025),...
-    'FaceColor','interp','EdgeColor','none');
-isonormals(UP,p1); lighting phong;
-xlabel('x'); ylabel('y'); zlabel('z'); 
-axis equal; axis square;  view(3); drawnow;
-toc
+
+    figure(1); clf;  UP = abs(u).^2;
+   
+    H = vol3d('CData',UP,'texture','3D','XData',x,'YData',y,'ZData',z);
+    xlabel('x'); ylabel('y'); zlabel('z'); colorbar;
+    axis equal; axis square; view(3); 
+     
+   
