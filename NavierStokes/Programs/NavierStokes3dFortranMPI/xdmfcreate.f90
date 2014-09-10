@@ -9,9 +9,9 @@
         !
         ! .. PARAMETERS .. INITIALIZED IN INPUTFILE
         ! time = start time of the simulation
-        ! Nx = power of two, number of modes in the x direction
-        ! Ny = power of two, number of modes in the y direction
-        ! Nz = power of two, number of modes in the z direction
+        ! Nx = number of modes in the x direction
+        ! Ny = number of modes in the y direction
+        ! Nz = number of modes in the z direction
         ! Nt = the number of timesteps
         ! plotgap = the number of timesteps to take before plotting
         ! Lx = definition of the periodic domain of computation in x direction
