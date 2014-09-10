@@ -18,7 +18,6 @@
         ! Ly = definition of the periodic domain of computation in y direction
         ! Lz = definition of the periodic domain of computation in z direction
         ! Dt = the time step
-        ! Es = focusing or defocusing
         !
         ! REFERENCES
         !
@@ -36,7 +35,7 @@
         IMPLICIT NONE
         ! .. Scalar Arguments ..
         INTEGER(KIND=4) :: Nx, Ny, Nz, Nt, plotgap
-        REAL(KIND=8)    :: Lx, Ly, Lz, DT, Es, time
+        REAL(KIND=8)    :: Lx, Ly, Lz, DT, time
         ! .. Local scalars ..
         INTEGER(KIND=4) :: stat,plotnum,ind,n,numplots
         REAL(KIND=8), PARAMETER :: pi=3.14159265358979323846264338327950288419716939937510d0
@@ -46,11 +45,11 @@
         InputFileName='INPUTFILE'
         OPEN(unit=11,FILE=trim(InputFileName),status="OLD")
         REWIND(11)
-        READ(11,*) Nx, Ny, Nz, Nt, plotgap, Lx, Ly, Lz, Es, DT, time
+        READ(11,*) Nx, Ny, Nz, Nt, plotgap, Lx, Ly, Lz, DT, time
         CLOSE(11)       
         time=0.0 
         plotnum=1
-        numplots=Nt/plotgap
+        numplots=1+Nt/plotgap
         OutputFileName='omegadata.xmf'
         OPEN(unit=11,FILE=trim(OutputFileName),status="UNKNOWN")
         REWIND(11)
