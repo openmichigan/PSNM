@@ -103,7 +103,7 @@
 	COMPLEX(kind=8), DIMENSION(:,:), ALLOCATABLE::  unax,vnax,vnbx,potx 
 	COMPLEX(kind=8), DIMENSION(:,:), ALLOCATABLE::  vnay,vnby
 	REAL(kind=8), 	 DIMENSION(:), ALLOCATABLE	::  time
-	INTEGER(kind=4)				::  i,j,k,n,allocatestatus,ierr
+	INTEGER(kind=4)				::  i,j,k,n,allocatestatus,ierr,ind
 	INTEGER(kind=4)			 	::  start, finish, count_rate, numthreads
 	INTEGER(kind=8), PARAMETER  ::  FFTW_IN_PLACE=8, FFTW_MEASURE=0,&
 									FFTW_EXHAUSTIVE=8, FFTW_PATIENT=32,&
@@ -231,7 +231,7 @@
 			name_config='./data/u'
 			WRITE(number_file,'(i0)') 10000000+1+n/plotgap
 			ind=index(name_config,' ') -1
-			name_config=name_config(1:ind)//numberfile
+			name_config=name_config(1:ind)//number_file
 			ind=index(name_config,' ') -1
 			name_config=name_config(1:ind)//'.dat'
 			OPEN(unit=11,FILE=name_config,status="UNKNOWN") 	
