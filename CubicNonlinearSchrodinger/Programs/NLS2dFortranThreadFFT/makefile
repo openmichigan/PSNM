@@ -5,7 +5,7 @@ FLAGS = -O3  -fopenmp
 
 
 # libraries
-LIBS = -L/usr/local/lib -lfftw3 -lm 
+LIBS = -L/usr/local/lib -lfftw3 -lfftw3_threads -lm 
 # source list for main program 
 SOURCES =  NLSsplitting.f90 
 		   
