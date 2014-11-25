@@ -1,1 +1,0 @@
-This folder contains editable LaTex (.tex) files, programs, and images for the Parallel Spectral Numerical Methods book. Learn more about LaTex: http://www.latex-project.org/
