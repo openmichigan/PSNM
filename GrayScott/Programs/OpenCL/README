@@ -1,0 +1,9 @@
+This is OpenCL code to solve the Gray scott equations.
+It requires an external FFT library. The library 
+clFFT is used. This can be downloaded from :
+
+https://github.com/clMathLibraries/clFFT
+
+grayscottOpenCLs.c
+grayscottOpenCL4k.c 
+grayscottOpenCL43.c 
