@@ -10,12 +10,10 @@
         ! .. PARAMETERS .. INITIALIZED IN INPUTFILE
         ! Nx = power of two, number of modes in the x direction
         ! Ny = power of two, number of modes in the y direction
-        ! Nz = power of two, number of modes in the z direction
         ! Nt = the number of timesteps
         ! plotgap = the number of timesteps to take before plotting
         ! Lx = definition of the periodic domain of computation in x direction
         ! Ly = definition of the periodic domain of computation in y direction
-        ! Lz = definition of the periodic domain of computation in z direction
         ! Dt = the time step
         !
         ! REFERENCES
@@ -33,8 +31,8 @@
         ! EXTERNAL ROUTINES REQUIRED
         IMPLICIT NONE
         ! .. Scalar Arguments ..
-        INTEGER(KIND=4) :: Nx, Ny, Nz, Nt, plotgap
-        REAL(KIND=8)    :: Lx, Ly, Lz, DT
+        INTEGER(KIND=4) :: Nx, Ny, Nt, plotgap
+        REAL(KIND=8)    :: Lx, Ly, DT
         ! .. Local scalars ..
         INTEGER(KIND=4) :: stat,plotnum,ind,n,numplots
         REAL(KIND=8), PARAMETER :: pi=3.14159265358979323846264338327950288419716939937510d0
@@ -44,7 +42,7 @@
         InputFileName='INPUTFILE'
         OPEN(unit=11,FILE=trim(InputFileName),status="OLD")
         REWIND(11)
-        READ(11,*) Nx, Ny, Nz, Nt, plotgap, Lx, Ly, Lz, DT
+        READ(11,*) Nx, Ny, Nt, plotgap, Lx, Ly, DT
         CLOSE(11)       
         plotnum=0
         numplots=1+Nt/plotgap
@@ -56,22 +54,22 @@
         WRITE(11,'(a)') "<Xdmf xmlns:xi=""http://www.w3.org/2001/XInclude"" Version=""2.0"">"
         WRITE(11,'(a)') "<Domain>"
         WRITE(11,'(a)') " <Topology name=""topo"" TopologyType=""3DCoRectMesh"""
-        WRITE(11,*) "  Dimensions=""",Nx,Ny,Nz,""">"
+        WRITE(11,*) "  Dimensions=""",Nx,Ny,""">"
         WRITE(11,'(a)') " </Topology>"
         WRITE(11,'(a)') " <Geometry name=""geo"" Type=""ORIGIN_DXDYDZ"">"
         WRITE(11,'(a)') "  <!-- Origin -->"
-        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""3"">"
-        WRITE(11,*) -pi*Lx, -pi*Ly, -pi*Lz 
+        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""2"">"
+        WRITE(11,*) -pi*Lx, -pi*Ly
         WRITE(11,'(a)') "  </DataItem>"
         WRITE(11,'(a)') "  <!-- DxDyDz -->"
-        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""3"">"
-        WRITE(11,*) REAL(2.0*pi*Lx/Nx,kind(0d0)), REAL(2.0*pi*Ly/Ny,kind(0d0)), REAL(2.0*pi*Lz/Nz,kind(0d0))  
+        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""2"">"
+        WRITE(11,*) REAL(2.0*pi*Lx/Nx,kind(0d0)), REAL(2.0*pi*Ly/Ny,kind(0d0))
         WRITE(11,'(a)') "   </DataItem>"
         WRITE(11,'(a)') "  </Geometry>"
         WRITE(11,'(a)')
         WRITE(11,'(a)') "       <Grid Name=""TimeSeries"" GridType=""Collection"" CollectionType=""Temporal"">"
         WRITE(11,'(a)') "               <Time TimeType=""HyperSlab"">"
-        WRITE(11,'(a)') "                       <DataItem Format=""XML"" NumberType=""Float"" Dimensions=""3"">"
+        WRITE(11,'(a)') "                       <DataItem Format=""XML"" NumberType=""Float"" Dimensions=""2"">"
         WRITE(11,*) "                   0.0", dt," 2" 
         WRITE(11,'(a)') "                       </DataItem>"
         WRITE(11,'(a)') "               </Time>"
@@ -99,7 +97,7 @@
                 WRITE(11,'(a)') "        <Attribute Name=""Displacement"" Center=""Node"">"
                 WRITE(11,'(a)') "               <DataItem Format=""Binary"" "
                 WRITE(11,'(a)') "                DataType=""Float"" Precision=""8"" Endian=""Little"" "
-                WRITE(11,*) "            Dimensions=""",Nx, Ny, Nz,""">"
+                WRITE(11,*) "            Dimensions=""",Nx, Ny,""">"
                 WRITE(11,'(16X,a)') "           ",OutputFileName
                 WRITE(11,'(a)') "               </DataItem>"
                 WRITE(11,'(a)') "       </Attribute>"
@@ -120,22 +118,22 @@
         WRITE(11,'(a)') "<Xdmf xmlns:xi=""http://www.w3.org/2001/XInclude"" Version=""2.0"">"
         WRITE(11,'(a)') "<Domain>"
         WRITE(11,'(a)') " <Topology name=""topo"" TopologyType=""3DCoRectMesh"""
-        WRITE(11,*) "  Dimensions=""",Nx,Ny,Nz,""">"
+        WRITE(11,*) "  Dimensions=""",Nx,Ny,""">"
         WRITE(11,'(a)') " </Topology>"
         WRITE(11,'(a)') " <Geometry name=""geo"" Type=""ORIGIN_DXDYDZ"">"
         WRITE(11,'(a)') "  <!-- Origin -->"
-        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""3"">"
-        WRITE(11,*) -pi*Lx, -pi*Ly, -pi*Lz 
+        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""2"">"
+        WRITE(11,*) -pi*Lx, -pi*Ly
         WRITE(11,'(a)') "  </DataItem>"
         WRITE(11,'(a)') "  <!-- DxDyDz -->"
-        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""3"">"
-        WRITE(11,*) REAL(2.0*pi*Lx/Nx,kind(0d0)), REAL(2.0*pi*Ly/Ny,kind(0d0)), REAL(2.0*pi*Lz/Nz,kind(0d0))  
+        WRITE(11,'(a)') "  <DataItem Format=""XML"" Dimensions=""2"">"
+        WRITE(11,*) REAL(2.0*pi*Lx/Nx,kind(0d0)), REAL(2.0*pi*Ly/Ny,kind(0d0))
         WRITE(11,'(a)') "   </DataItem>"
         WRITE(11,'(a)') "  </Geometry>"
         WRITE(11,'(a)')
         WRITE(11,'(a)') "       <Grid Name=""TimeSeries"" GridType=""Collection"" CollectionType=""Temporal"">"
         WRITE(11,'(a)') "               <Time TimeType=""HyperSlab"">"
-        WRITE(11,'(a)') "                       <DataItem Format=""XML"" NumberType=""Float"" Dimensions=""3"">"
+        WRITE(11,'(a)') "                       <DataItem Format=""XML"" NumberType=""Float"" Dimensions=""2"">"
         WRITE(11,*) "                   0.0", dt," 2" 
         WRITE(11,'(a)') "                       </DataItem>"
         WRITE(11,'(a)') "               </Time>"
@@ -163,7 +161,7 @@
                 WRITE(11,'(a)') "        <Attribute Name=""Displacement"" Center=""Node"">"
                 WRITE(11,'(a)') "               <DataItem Format=""Binary"" "
                 WRITE(11,'(a)') "                DataType=""Float"" Precision=""8"" Endian=""Little"" "
-                WRITE(11,*) "            Dimensions=""",Nx, Ny, Nz,""">"
+                WRITE(11,*) "            Dimensions=""",Nx, Ny,""">"
                 WRITE(11,'(16X,a)') "           ",OutputFileName
                 WRITE(11,'(a)') "               </DataItem>"
                 WRITE(11,'(a)') "       </Attribute>"
