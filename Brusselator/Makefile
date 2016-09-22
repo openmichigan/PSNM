@@ -1,9 +1,8 @@
 # Set options to allow for conditional compilation, use only one of the options below
 # These are processed using the C pre-processor
 #
-# -DREGULAR_OUTPUT -- writes out data files using a blocking mpi io write
 #
-OPTIONS= -DREGULAR_OUTPUT 
+OPTIONS= 
 CPP=-cpp
 	# All settings here for use Muite Laptop
 
@@ -21,10 +20,10 @@ CPP=-cpp
 # source list for main program
 
 SOURCES = brusselator.f90 initialdata.f90 savedata.f90 getgrid.f90 \
-		  saveresults.f90 linear.f90 nonlinear1.f90 nonlinear2.f90 
+		 linear.f90 nonlinear1.f90 nonlinear2.f90 
 
 OBJECTS = brusselator.o initialdata.o savedata.o getgrid.o \
-		  saveresults.o linear.o nonlinear1.o nonlinear2.o 
+		 linear.o nonlinear1.o nonlinear2.o 
 
 
 Brusselator: $(OBJECTS)
