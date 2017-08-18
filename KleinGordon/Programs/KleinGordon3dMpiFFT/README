@@ -1,0 +1,6 @@
+
+
+To run the code, the location of the inputfile needs to be exported as an environment variable, see the example
+job submission script. 
+
+When compiling 2decomp&fft, be sure not to overwrite input data.
