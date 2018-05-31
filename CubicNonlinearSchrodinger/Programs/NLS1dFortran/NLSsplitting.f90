@@ -134,7 +134,7 @@
 		CALL dfftw_execute_dft_(planbx,vn(1:Nx),una(1:Nx))
 		! normalize
 		DO i=1,Nx
-			una(i)=una(1:Nx)/REAL(Nx,kind(0d0))	
+			una(i)=una(i)/REAL(Nx,kind(0d0))	
 			pot(i)=Es*una(i)*conjg(una(i))
 			unb(i)=exp(cmplx(0.0d0,-1.0d0)*dt*pot(i))*una(i)
 		END DO
